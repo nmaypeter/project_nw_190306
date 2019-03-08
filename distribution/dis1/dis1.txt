@@ -1,7 +1,7 @@
-只有20%的人買得起最貴商品。
+所有商品的均價有一半的人負擔得起，只有20%的人買得起最貴商品。
 
 price_list = [[0.24, 0.48, 0.72]]
-mu = np.median(price_list[pk])
+mu = np.mean(price_list[pk])
 sigma = (max(price_list[pk]) - mu) / 0.8415
 
 買得起0	0.8
