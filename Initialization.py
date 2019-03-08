@@ -228,8 +228,8 @@ class IniWallet:
             sigma = 1
 
         fw = open('data/' + self.data_name + '/wallet_r' + list(self.prod_name)[list(self.prod_name).index('r') + 1] +
-                  'p' + list(self.prod_name)[list(self.prod_name).index('p') + 1] + 'n' + list(self.prod_name)[
-                      list(self.prod_name).index('n') + 1] +
+                  'p' + list(self.prod_name)[list(self.prod_name).index('p') + 1] +
+                  'n' + list(self.prod_name)[list(self.prod_name).index('n') + 1] +
                   '_dis' + str(self.dis) + '.txt', 'w')
         for i in range(0, num_node + 1):
             wal = 0
@@ -242,8 +242,8 @@ class IniWallet:
         # -- get wallet_list from file --
         w_list = []
         with open('data/' + self.data_name + '/wallet_r' + list(self.prod_name)[list(self.prod_name).index('r') + 1] +
-                  'p' + list(self.prod_name)[list(self.prod_name).index('p') + 1] + 'n' + list(self.prod_name)[
-                      list(self.prod_name).index('n') + 1] +
+                  'p' + list(self.prod_name)[list(self.prod_name).index('p') + 1] +
+                  'n' + list(self.prod_name)[list(self.prod_name).index('n') + 1] +
                   '_dis' + str(self.dis) + '.txt') as f:
             for line in f:
                 (node, wal) = line.split()
@@ -256,8 +256,8 @@ class IniWallet:
         # -- get total_wallet from file --
         total_w = 0.0
         with open('data/' + self.data_name + '/wallet_r' + list(self.prod_name)[list(self.prod_name).index('r') + 1] +
-                  'p' + list(self.prod_name)[list(self.prod_name).index('p') + 1] + 'n' + list(self.prod_name)[
-                      list(self.prod_name).index('n') + 1] +
+                  'p' + list(self.prod_name)[list(self.prod_name).index('p') + 1] +
+                  'n' + list(self.prod_name)[list(self.prod_name).index('n') + 1] +
                   '_dis' + str(self.dis) + '.txt') as f:
             for line in f:
                 (node, wallet) = line.split()
