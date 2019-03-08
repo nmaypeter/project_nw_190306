@@ -1,7 +1,7 @@
 from Diffusion_NormalIC import *
 
 
-class SeedSelectionNG:
+class SeedSelectionNGSCS:
     def __init__(self, g_dict, s_c_dict, prod_list, total_bud, monte):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
@@ -56,10 +56,10 @@ class SeedSelectionNG:
 if __name__ == "__main__":
     data_set_name = "email_undirected"
     product_name = "r1p3n1"
-    distribution_type = 1
     bud = 10
-    pp_strategy = 1
+    distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
+    pp_strategy = 1
     monte_carlo, eva_monte_carlo = 100, 1000
 
     iniG = IniGraph(data_set_name)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     # -- initialization for each budget --
     start_time = time.time()
-    ssng = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
+    ssng = SeedSelectionNGSCS(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
     diff = Diffusion(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
 
     # -- initialization for each sample --
@@ -81,30 +81,20 @@ if __name__ == "__main__":
     seed_set = [set() for _ in range(num_product)]
 
     celf_sequence = ssng.generateCelfSequence()
-    print(round(time.time() - start_time, 4))
     mep_celf = [-1, 0.0]
     for kk in range(num_product):
         if celf_sequence[kk][0][2] > mep_celf[1]:
             mep_celf = [kk, celf_sequence[kk][0][2]]
-    for kk in range(num_product):
-        print(len(celf_sequence[kk]), kk, celf_sequence[kk])
     mep_g = celf_sequence[mep_celf[0]].pop(0)
     mep_k_prod, mep_i_node, mep_mg, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
-    print(now_budget, seed_set)
 
     while now_budget < bud and mep_i_node != '-1':
-        print(mep_g)
         if now_budget + seed_cost_dict[mep_i_node] > bud:
             mep_celf = [-1, 0.0]
             for kk in range(num_product):
                 if celf_sequence[kk][0][2] > mep_celf[1]:
                     mep_celf = [kk, celf_sequence[kk][0][2]]
-            print('over budget')
-            for kk in range(num_product):
-                print(len(celf_sequence[kk]), kk, celf_sequence[kk])
-            print(now_budget, seed_set)
             mep_g = celf_sequence[mep_celf[0]].pop(0)
-            print(mep_g)
             mep_k_prod, mep_i_node, mep_mg, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
             if mep_i_node == '-1':
                 break
@@ -118,11 +108,6 @@ if __name__ == "__main__":
                 ep_g += diff.getSeedSetProfit(seed_set)
             now_profit = round(ep_g / monte_carlo, 4)
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
-            print('inset seed set')
-            for kk in range(num_product):
-                print(len(celf_sequence[kk]), kk, celf_sequence[kk])
-            print(now_budget, seed_set)
-            print(mep_g)
         else:
             ep_g = 0.0
             for _ in range(monte_carlo):
