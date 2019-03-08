@@ -56,10 +56,10 @@ class SeedSelectionNG:
 if __name__ == "__main__":
     data_set_name = "email_undirected"
     product_name = "r1p3n1"
-    distribution_type = 1
     bud = 10
-    pp_strategy = 1
+    distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
+    pp_strategy = 1
     monte_carlo, eva_monte_carlo = 100, 1000
 
     iniG = IniGraph(data_set_name)
