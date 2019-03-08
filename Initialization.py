@@ -275,7 +275,7 @@ if __name__ == '__main__':
     distribution_type = 2
 
     iniG = IniGraph(data_set_name)
-    # iniP = IniProduct(product_name)
+    iniP = IniProduct(product_name)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
 
     # iniG.setEdgeWeight()
