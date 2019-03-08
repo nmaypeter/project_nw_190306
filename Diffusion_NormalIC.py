@@ -165,7 +165,7 @@ class Diffusion:
 
         return round(ep, 4)
 
-    
+
 class Evaluation:
     def __init__(self, g_dict, s_c_dict, prod_list, pps, wpiwp):
         ### g_dict: (dict) the graph
