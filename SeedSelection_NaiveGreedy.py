@@ -38,6 +38,8 @@ class SeedSelectionNG:
             ep = round(ep / self.monte, 4)
             mg = round(ep, 4)
 
+            if mg <= 0:
+                continue
             for k in range(self.num_product):
                 mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
                 celf_ep = [k, i, mg, 0]
@@ -106,6 +108,8 @@ if __name__ == "__main__":
             mep_mg = round(ep_g - now_profit, 4)
             mep_flag = seed_set_length
 
+            if mep_mg <= 0:
+                continue
             celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
             celf_sequence.append(celf_ep_g)
             for celf_item_g in celf_sequence:
