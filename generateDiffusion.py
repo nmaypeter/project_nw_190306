@@ -6,10 +6,8 @@ price_list = [[0.24, 0.48, 0.72]]
 # price_list = [[0.24, 0.48, 0.72], [0.24, 0.48, 0.6], [0.24, 0.48, 0.96]]
 
 for pk in range(len(price_list)):
-    mu = np.median(price_list[pk])
-    # mu = np.mean(price_list[pk])
+    mu = np.mean(price_list[pk])
     # mu = sum(price_list[pk])
-    # sigma = round(float(np.std(price_list[pk])), 4)
     sigma = (max(price_list[pk]) - mu) / 0.8415
     # sigma = 1
     X = np.arange(0, 2, 0.001)
