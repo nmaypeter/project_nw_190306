@@ -1,8 +1,7 @@
+from generateDiffusion import *
 import random
 import os.path
 import time
-import numpy as np
-from scipy import stats
 
 
 class IniGraph:
@@ -221,7 +220,7 @@ class IniWallet:
 
         mu, sigma = 0, 1
         if self.dis == 1:
-            mu = np.median(price_list)
+            mu = np.mean(price_list)
             sigma = (max(price_list) - mu) / 0.8415
         elif self.dis == 2:
             mu = sum(price_list)
@@ -234,7 +233,9 @@ class IniWallet:
         for i in range(0, num_node + 1):
             wal = 0
             while wal <= 0:
-                wal = stats.norm.rvs(mu, sigma)
+                q = stats.norm.rvs(mu, sigma)
+                pd = stats.norm.pdf(q, mu, sigma)
+                wal = get_quantiles(pd, mu, sigma)
             fw.write(str(i) + '\t' + str(round(wal, 2)) + '\n')
         fw.close()
 
@@ -304,10 +305,10 @@ if __name__ == '__main__':
 
     ### -- num_node --
     ### -- email_undirected = 1134 --
-    ### -- dnc_email_directed = 2029 --
-    ### -- email_Eu_core_directed = 1004 --
-    ### -- WikiVote_directed = 7115 --
-    ### -- NetPHY_undirected = 37149 --
+    ### -- dnc_email_directed = 2030 --
+    ### -- email_Eu_core_directed = 1005 --
+    ### -- WikiVote_directed = 8298 --
+    ### -- NetPHY_undirected = 37154 --
 
     ### -- num_edge --
     ### -- email_undirected = 10902 --
@@ -325,27 +326,27 @@ if __name__ == '__main__':
 
     ### -- total wallet --
     ### -- email_undirected --
-    ### -- r1p3n1_dis1 = 570.14 --
-    ### -- r1p3n1_dis2 = 1788.49 --
-    ### -- r1p3n2_dis1 = 573.76 --
-    ### -- r1p3n2_dis2 = 1795.84 --
+    ### -- r1p3n1_dis1 = 567.72 --
+    ### -- r1p3n1_dis2 = 1817.51 --
+    ### -- r1p3n2_dis1 = 565.12 --
+    ### -- r1p3n2_dis2 = 1810.14 --
     ### -- dnc_email_directed --
-    ### -- r1p3n1_dis1 = 1021.79 --
-    ### -- r1p3n1_dis2 = 3282.75 --
-    ### -- r1p3n2_dis1 = 1025.82 --
-    ### -- r1p3n2_dis2 = 3253.15 --
+    ### -- r1p3n1_dis1 = 1031.15 --
+    ### -- r1p3n1_dis2 = 3213.11 --
+    ### -- r1p3n2_dis1 = 1033.83 --
+    ### -- r1p3n2_dis2 = 3224.84 --
     ### -- email_Eu_core_directed --
-    ### -- r1p3n1_dis1 = 511.5 --
-    ### -- r1p3n1_dis2 = 1594.44 --
-    ### -- r1p3n2_dis1 = 509.63 --
-    ### -- r1p3n2_dis2 = 1650.43 --
+    ### -- r1p3n1_dis1 = 501.08 --
+    ### -- r1p3n1_dis2 = 1609.49 --
+    ### -- r1p3n2_dis1 = 520.78 --
+    ### -- r1p3n2_dis2 = 1612.18 --
     ### -- WikiVote_directed --
-    ### -- r1p3n1_dis1 = 4248.36 --
-    ### -- r1p3n1_dis2 = 13156.22 --
-    ### -- r1p3n2_dis1 = 4250.98 --
-    ### -- r1p3n2_dis2 = 13230.86 --
+    ### -- r1p3n1_dis1 = 4218.89 --
+    ### -- r1p3n1_dis2 = 13261.1 --
+    ### -- r1p3n2_dis1 = 4231.82 --
+    ### -- r1p3n2_dis2 = 13374.82 --
     ### -- NetPHY_undirected --
-    ### -- r1p3n1_dis1 = 18789.21 --
-    ### -- r1p3n1_dis2 = 59080.78 --
-    ### -- r1p3n2_dis1 = 18847.2 --
-    ### -- r1p3n2_dis2 = 59208.29 --
+    ### -- r1p3n1_dis1 = 18931.92 --
+    ### -- r1p3n1_dis2 = 59081.29 --
+    ### -- r1p3n2_dis1 = 18878.49 --
+    ### -- r1p3n2_dis2 = 59100.57 --
