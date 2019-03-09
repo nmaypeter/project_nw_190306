@@ -1,6 +1,5 @@
-import copy
-from random import choice
 from Initialization import *
+import copy
 
 
 class Diffusion:
