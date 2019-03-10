@@ -2,8 +2,6 @@ ctl = 0
 
 data_setting_seq = [1]
 model_kinds = 4
-if ctl == 1:
-    model_kinds = 2
 pps_seq = [1, 2, 3]
 wpiwp_seq = [bool(0), bool(1)]
 prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
