@@ -34,7 +34,7 @@ if __name__ == '__main__':
                             seed_set_sequence = []
 
                             for sample_count in range(sample_number):
-                                print('@ mngic seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
+                                print('@ mngpwic seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
                                       ', product_name = ' + product_name + ', budget = ' + str(bud) + ', sample_count = ' + str(sample_count))
                                 now_budget, now_profit = 0.0, 0.0
                                 seed_set = [set() for _ in range(num_product)]
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                                 personal_prob_list = eva_main.setPersonalProbList(wallet_list)
 
                                 for sample_count, sample_seed_set in enumerate(seed_set_sequence):
-                                    print('@ mngic evaluation @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
+                                    print('@ mngpwic evaluation @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                           ', product_name = ' + product_name + ', budget = ' + str(bud) + ', pps = ' + str(pps) + ', sample_count = ' + str(sample_count))
                                     sample_pro_acc, sample_bud_acc = 0.0, 0.0
                                     sample_sn_k_acc, sample_pnn_k_acc = [0.0 for _ in range(num_product)], [0 for _ in range(num_product)]
@@ -145,14 +145,14 @@ if __name__ == '__main__':
 
                                 pps_time = round(time.time() - pps_start_time, 2)
                                 total_time = round(ss_time + pps_time, 2)
-                                path1 = 'result/mngic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp
+                                path1 = 'result/mngpwic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp
                                 if not os.path.isdir(path1):
                                     os.mkdir(path1)
-                                path = 'result/mngic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + product_name
+                                path = 'result/mngpwic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + product_name
                                 if not os.path.isdir(path):
                                     os.mkdir(path)
                                 fw = open(path + '/' + 'b' + str(bud) + '_i' + str(sample_number) + '.txt', 'w')
-                                fw.write('mngic, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
+                                fw.write('mngpwic, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
                                          'data_set_name = ' + data_set_name + ', product_name = ' + product_name + '\n' +
                                          'total_budget = ' + str(bud) + ', sample_count = ' + str(sample_number) + '\n' +
                                          'avg_profit = ' + str(avg_pro) +
