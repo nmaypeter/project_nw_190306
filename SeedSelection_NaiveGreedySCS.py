@@ -113,12 +113,12 @@ if __name__ == '__main__':
             for _ in range(monte_carlo):
                 ep_g += diff.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
             ep_g = round(ep_g / monte_carlo, 4)
-            mep_mg = round(ep_g - now_profit, 4)
-            mep_flag = seed_set_length
+            mg_g = round(ep_g - now_profit, 4)
+            ep_flag = seed_set_length
 
-            if mep_mg <= 0:
+            if mg_g <= 0:
                 continue
-            celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
+            celf_ep_g = [mep_k_prod, mep_i_node, mg_g, ep_flag]
             celf_sequence[mep_k_prod].append(celf_ep_g)
             for celf_item_g in celf_sequence[mep_k_prod]:
                 if celf_ep_g[2] >= celf_item_g[2]:
