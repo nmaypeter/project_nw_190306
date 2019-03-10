@@ -1,4 +1,4 @@
-ctl = 1
+ctl = 0
 
 data_setting_seq = [1]
 model_kinds = 4
