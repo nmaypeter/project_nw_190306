@@ -77,7 +77,7 @@ class SeedSelectionPMIS:
                         break
                     continue
 
-                seed_set_length = sum(len(seed_set_t[kk]) for kk in range(self.num_product))
+                seed_set_length = sum(len(seed_set_t[k]) for k in range(self.num_product))
                 if mep_flag == seed_set_length:
                     seed_set_t[mep_k_prod].add(mep_i_node)
                     ep_g = 0.0
@@ -111,9 +111,9 @@ class SeedSelectionPMIS:
         return s_mat, c_mat
 
 
-if __name__ == "__main__":
-    data_set_name = "email_undirected"
-    product_name = "r1p3n1"
+if __name__ == '__main__':
+    data_set_name = 'email_undirected'
+    product_name = 'r1p3n1'
     bud = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
@@ -157,19 +157,18 @@ if __name__ == "__main__":
                     break
             if temp_bound_flag:
                 temp_bound_index = copy.deepcopy(bud_index)
-
                 # -- pmis execution --
-                seed_set_t = [set() for _ in range(num_product)]
+                seed_set = [set() for _ in range(num_product)]
                 for kk in range(num_product):
-                    seed_set_t[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
+                    seed_set[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
 
                 pro_acc = 0.0
                 for _ in range(monte_carlo):
-                    pro_acc += diff.getSeedSetProfit(seed_set_t)
+                    pro_acc += diff.getSeedSetProfit(seed_set)
                 pro_acc = round(pro_acc / monte_carlo, 4)
 
                 if pro_acc > mep_result[0]:
-                    mep_result = [pro_acc, seed_set_t]
+                    mep_result = [pro_acc, seed_set]
 
         pointer = num_product - 1
         while bud_index[pointer] == bud_bound_index[pointer]:
@@ -204,11 +203,11 @@ if __name__ == "__main__":
             sample_bud_acc = round(sample_bud_acc, 2)
             sample_bud_k_acc[kk] = round(sample_bud_k_acc[kk], 2)
 
-    print("seed set: " + str(seed_set))
-    print("profit: " + str(sample_pro_acc))
-    print("budget: " + str(sample_bud_acc))
-    print("seed number: " + str(sample_sn_k_acc))
-    print("purchasing node number: " + str(sample_pnn_k_acc))
-    print("ratio profit: " + str(sample_pro_k_acc))
-    print("ratio budget: " + str(sample_bud_k_acc))
-    print("total time: " + str(round(time.time() - start_time, 2)) + "sec")
+    print('seed set: ' + str(seed_set))
+    print('profit: ' + str(sample_pro_acc))
+    print('budget: ' + str(sample_bud_acc))
+    print('seed number: ' + str(sample_sn_k_acc))
+    print('purchasing node number: ' + str(sample_pnn_k_acc))
+    print('ratio profit: ' + str(sample_pro_k_acc))
+    print('ratio budget: ' + str(sample_bud_k_acc))
+    print('total time: ' + str(round(time.time() - start_time, 2)) + 'sec')
