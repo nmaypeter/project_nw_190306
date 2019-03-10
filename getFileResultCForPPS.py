@@ -1,5 +1,5 @@
 data_setting_seq = [1]
-model_kinds = 4
+model_kinds = 5
 pps_seq = [1, 2, 3]
 wpiwp_seq = [bool(0), bool(1)]
 prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
@@ -8,8 +8,7 @@ for data_setting in data_setting_seq:
     data_set_name = 'email_undirected' * (data_setting == 1) + 'dnc_email_directed' * (data_setting == 2) + 'email_Eu_core_directed' * (data_setting == 3) + \
                     'WikiVote_directed' * (data_setting == 4) + 'NetPHY_undirected' * (data_setting == 5)
     for m in range(1, model_kinds + 1):
-        model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + '_pps'
-        # model_name = 'mngic' * (m == 1) + 'mngscsic' * (m == 2) + '_pps'
+        model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + 'mngscsic' * (m == 5) + '_pps'
         for dis in dis_seq:
             profit = []
             for prod_setting in prod_setting_seq:
@@ -34,8 +33,8 @@ for data_setting in data_setting_seq:
                                 profit.append('')
                                 continue
 
-            fw = open('result/r_' + data_set_name + '/' + model_name + '_comparison_dis' + str(dis) + '_profit.txt', 'w')
-            # fw = open('result/r_' + data_set_name + '/' + model_name + '_ng_comparison_dis' + str(dis) + '_profit.txt', 'w')
+            model_name = model_name.replace('_pps', '')
+            fw = open('result/r_' + data_set_name + '/dis' + str(dis) + '_' + model_name + '_comparison_profit.txt', 'w')
             for lnum, line in enumerate(profit):
                 if lnum % 6 == 0 and lnum != 0:
                     fw.write('\n' * 9)
