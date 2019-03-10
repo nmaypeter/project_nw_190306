@@ -53,9 +53,9 @@ class SeedSelectionNG:
         return celf_seq
 
 
-if __name__ == "__main__":
-    data_set_name = "email_undirected"
-    product_name = "r1p3n1"
+if __name__ == '__main__':
+    data_set_name = 'email_undirected'
+    product_name = 'r1p3n1'
     bud = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
@@ -147,11 +147,11 @@ if __name__ == "__main__":
             sample_bud_acc = round(sample_bud_acc, 2)
             sample_bud_k_acc[kk] = round(sample_bud_k_acc[kk], 2)
 
-    print("seed set: " + str(seed_set))
-    print("profit: " + str(sample_pro_acc))
-    print("budget: " + str(sample_bud_acc))
-    print("seed number: " + str(sample_sn_k_acc))
-    print("purchasing node number: " + str(sample_pnn_k_acc))
-    print("ratio profit: " + str(sample_pro_k_acc))
-    print("ratio budget: " + str(sample_bud_k_acc))
-    print("total time: " + str(round(time.time() - start_time, 2)) + "sec")
+    print('seed set: ' + str(seed_set))
+    print('profit: ' + str(sample_pro_acc))
+    print('budget: ' + str(sample_bud_acc))
+    print('seed number: ' + str(sample_sn_k_acc))
+    print('purchasing node number: ' + str(sample_pnn_k_acc))
+    print('ratio profit: ' + str(sample_pro_k_acc))
+    print('ratio budget: ' + str(sample_bud_k_acc))
+    print('total time: ' + str(round(time.time() - start_time, 2)) + 'sec')
