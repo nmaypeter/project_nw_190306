@@ -1,5 +1,9 @@
+ctl = 1
+
 data_setting_seq = [1]
 model_kinds = 4
+if ctl == 1:
+    model_kinds = 2
 pps_seq = [1, 2, 3]
 wpiwp_seq = [bool(0), bool(1)]
 prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
@@ -16,7 +20,8 @@ for data_setting in data_setting_seq:
                     for wpiwp in wpiwp_seq:
                         for m in range(1, model_kinds + 1):
                             model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + '_pps'
-                            # model_name = 'mngic' * (m == 1) + 'mngscsic' * (m == 2) + '_pps'
+                            if ctl == 1:
+                                model_name = 'mngic' * (m == 1) + 'mngscsic' * (m == 2) + '_pps'
 
                             try:
                                 result_name = 'result/r_' + data_set_name + '/' + model_name + str(pps) + '_dis' + str(dis) + '_wpiwp' * wpiwp \
@@ -34,8 +39,9 @@ for data_setting in data_setting_seq:
                                 profit.append('')
                                 continue
 
-            fw = open('result/r_' + data_set_name + '/pps' + str(pps) + '_comparison_dis' + str(dis) + '_profit.txt', 'w')
-            # fw = open('result/r_' + data_set_name + '/pps' + str(pps) + '_ng_comparison_dis' + str(dis) + '_profit.txt', 'w')
+            fw = open('result/r_' + data_set_name + '/dis' + str(dis) + '_pps' + str(pps) + '_comparison_profit.txt', 'w')
+            if ctl == 1:
+                fw = open('result/r_' + data_set_name + '/dis' + str(dis) + '_pps' + str(pps) + '_comparison_ng_profit.txt', 'w')
             for lnum, line in enumerate(profit):
                 if lnum % (model_kinds * 2) == 0 and lnum != 0:
                     fw.write('\n' * 9)
