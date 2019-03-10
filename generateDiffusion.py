@@ -21,7 +21,7 @@ def get_quantiles(pd, mu, sigma):
         return choice([mu - np.sqrt(discrim), mu + np.sqrt(discrim)])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     price_list_g = [[0.24, 0.48, 0.72]]
     # price_list = [[0.24, 0.48, 0.72], [0.24, 0.48, 0.6], [0.24, 0.48, 0.96]]
 
