@@ -35,6 +35,30 @@ class SeedSelectionHD:
 
         return d_dict
 
+    def constructExpendDegreeDict(self):
+        # -- display the degree and the nodes with the degree --
+        ### d_dict: (dict) the degree and the nodes with the degree
+        ### d_dict[deg]: (set) the set for deg-degree nodes
+        d_dict = {}
+        for i in self.graph_dict:
+            i_set = {i}
+            for i_neighbor in self.graph_dict[i]:
+                if i_neighbor not in i_set:
+                    i_set.add(i_neighbor)
+            for i_neighbor in self.graph_dict[i]:
+                for i_neighbor_neighbor in self.graph_dict[i_neighbor]:
+                    if i_neighbor_neighbor not in i_set:
+                        i_set.add(i_neighbor_neighbor)
+
+            deg = str(len(i_set))
+            for k in range(self.num_product):
+                if deg in d_dict:
+                    d_dict[deg].add((k, i))
+                else:
+                    d_dict[deg] = {(k, i)}
+
+        return d_dict
+
     def getHighDegreeNode(self, d_dict, cur_bud):
         # -- get the node with highest degree --
         mep = [-1, '-1']
