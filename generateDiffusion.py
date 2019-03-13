@@ -26,10 +26,10 @@ if __name__ == '__main__':
     # price_list = [[0.24, 0.48, 0.72], [0.24, 0.48, 0.6], [0.24, 0.48, 0.96]]
 
     for pk in range(len(price_list_g)):
-        mu_g = np.mean(price_list_g[pk])
-        # mu_g = sum(price_list[pk])
-        sigma_g = (max(price_list_g[pk]) - mu_g) / 0.8415
-        # sigma_g = 1
+        # mu_g = np.mean(price_list_g[pk])
+        mu_g = sum(price_list_g[pk])
+        # sigma_g = (max(price_list_g[pk]) - mu_g) / 0.8415
+        sigma_g = abs(min(price_list_g[pk]) - mu_g) / 3
         X_g = np.arange(0, 2, 0.001)
 
         Y_g = [stats.norm.pdf(X_g, mu_g, sigma_g), stats.norm.cdf(X_g, mu_g, sigma_g), stats.norm.sf(X_g, mu_g, sigma_g)]
