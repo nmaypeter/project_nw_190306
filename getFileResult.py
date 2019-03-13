@@ -2,7 +2,7 @@ import os
 
 data_setting_seq = [1]
 # model is optional
-model_seq = [1, 2, 3, 4, 5]
+model_seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 pps_seq = [1, 2, 3]
 wpiwp_seq = [bool(0), bool(1)]
 prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
@@ -12,7 +12,8 @@ for data_setting in data_setting_seq:
                     'WikiVote_directed' * (data_setting == 4) + 'NetPHY_undirected' * (data_setting == 5)
     for m in model_seq:
         model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + \
-                     'mngscsic' * (m == 5) + '_pps'
+                     'mngscsic' * (m == 5) + 'mngric' * (m == 6) + 'mngpwic' * (m == 7) + \
+                     'mhedic' * (m == 8) + 'mhdpwic' * (m == 9) + 'mhedpwic' * (m == 10) + '_pps'
         for pps in pps_seq:
             for wpiwp in wpiwp_seq:
                 for prod_setting in prod_setting_seq:
