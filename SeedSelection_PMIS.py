@@ -24,7 +24,7 @@ class SeedSelectionPMIS:
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
         celf_seq = [[[-1, '-1', 0.0, 0]] for _ in range(self.num_product)]
 
-        diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.total_budget, self.monte)
+        diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
 
         for i in set(self.graph_dict.keys()):
             # -- the cost of seed cannot exceed the budget --
@@ -56,7 +56,7 @@ class SeedSelectionPMIS:
     def generateDecomposedResult(self):
         s_mat, c_mat = [[] for _ in range(self.num_product)], [[] for _ in range(self.num_product)]
         sspmis_ss = SeedSelectionPMIS(self.graph_dict, self.seed_cost_dict, self.product_list, self.total_budget, self.monte)
-        diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.total_budget, self.monte)
+        diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
         celf_sequence = sspmis_ss.generateCelfSequence()
 
         for k in range(self.num_product):
@@ -67,12 +67,12 @@ class SeedSelectionPMIS:
             seed_set_t = [set() for _ in range(self.num_product)]
 
             mep = celf_sequence[k].pop(0)
-            mep_k_prod, mep_i_node, mep_mg, mep_flag = mep[0], mep[1], mep[2], mep[3]
+            mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
 
             while cur_budget < self.total_budget and mep_i_node != '-1':
                 if cur_budget + self.seed_cost_dict[mep_i_node] > self.total_budget:
                     mep = celf_sequence[k].pop(0)
-                    mep_k_prod, mep_i_node, mep_mg, mep_flag = mep[0], mep[1], mep[2], mep[3]
+                    mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
                     if mep_i_node == '-1':
                         break
                     continue
@@ -106,7 +106,7 @@ class SeedSelectionPMIS:
                             break
 
                 mep = celf_sequence[k].pop(0)
-                mep_k_prod, mep_i_node, mep_mg, mep_flag = mep[0], mep[1], mep[2], mep[3]
+                mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
 
         return s_mat, c_mat
 
@@ -114,7 +114,7 @@ class SeedSelectionPMIS:
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
-    bud = 10
+    total_budget = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
     pp_strategy = 1
@@ -131,8 +131,8 @@ if __name__ == '__main__':
 
     # -- initialization for each budget --
     start_time = time.time()
-    sspmis = SeedSelectionPMIS(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
-    diff = Diffusion(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
+    sspmis = SeedSelectionPMIS(graph_dict, seed_cost_dict, product_list, total_budget, monte_carlo)
+    diff = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
 
     # -- initialization for each sample_number --
     mep_result = [0.0, [set() for _ in range(num_product)]]
@@ -149,26 +149,20 @@ if __name__ == '__main__':
         for kk in range(num_product):
             bud_pmis += copy.deepcopy(c_matrix)[kk][bud_index[kk]]
 
-        if bud_pmis <= bud:
-            temp_bound_flag = 1
+        if bud_pmis <= total_budget:
+            temp_bound_index = copy.deepcopy(bud_index)
+            # -- pmis execution --
+            seed_set = [set() for _ in range(num_product)]
             for kk in range(num_product):
-                if temp_bound_index[kk] > bud_index[kk]:
-                    temp_bound_flag = 0
-                    break
-            if temp_bound_flag:
-                temp_bound_index = copy.deepcopy(bud_index)
-                # -- pmis execution --
-                seed_set = [set() for _ in range(num_product)]
-                for kk in range(num_product):
-                    seed_set[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
+                seed_set[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
 
-                pro_acc = 0.0
-                for _ in range(monte_carlo):
-                    pro_acc += diff.getSeedSetProfit(seed_set)
-                pro_acc = round(pro_acc / monte_carlo, 4)
+            pro_acc = 0.0
+            for _ in range(monte_carlo):
+                pro_acc += diff.getSeedSetProfit(seed_set)
+            pro_acc = round(pro_acc / monte_carlo, 4)
 
-                if pro_acc > mep_result[0]:
-                    mep_result = [pro_acc, seed_set]
+            if pro_acc > mep_result[0]:
+                mep_result = [pro_acc, seed_set]
 
         pointer = num_product - 1
         while bud_index[pointer] == bud_bound_index[pointer]:
