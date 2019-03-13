@@ -166,7 +166,7 @@ class Diffusion:
 
 
 class DiffusionPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, total_bud, monte, pw_list):
+    def __init__(self, g_dict, s_c_dict, prod_list, total_bud, monte, p_w_list):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
@@ -174,7 +174,7 @@ class DiffusionPW:
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
         ### monte: (int) monte carlo times
-        ### pw_list: (list) the product weight list
+        ### p_w_list: (list) the product weight list
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
@@ -182,7 +182,7 @@ class DiffusionPW:
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.monte = monte
-        self.pw_list = pw_list
+        self.pw_list = p_w_list
 
     def getExpectedProfit(self, k_prod, i_node, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
