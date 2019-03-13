@@ -85,16 +85,13 @@ class SeedSelectionHD:
             d_dict[str(max_degree)].remove(mep)
             mep = list(mep)
 
-            if self.seed_cost_dict[mep[1]] + cur_bud > self.total_budget:
-                mep[1] = '-1'
-
         return mep, d_dict
 
 
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
-    bud = 10
+    total_budget = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
     pp_strategy = 1
@@ -111,7 +108,7 @@ if __name__ == '__main__':
 
     # -- initialization for each budget --
     start_time = time.time()
-    sshd = SeedSelectionHD(graph_dict, seed_cost_dict, product_list, bud)
+    sshd = SeedSelectionHD(graph_dict, seed_cost_dict, product_list, total_budget)
 
     # -- initialization for each sample_number --
     now_budget = 0.0
@@ -122,7 +119,14 @@ if __name__ == '__main__':
     mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     # -- main --
-    while now_budget < bud and mep_i_node != '-1':
+    while now_budget < total_budget and mep_i_node != '-1':
+        if now_budget + seed_cost_dict[mep_i_node] > total_budget:
+            mep_g, degree_dict = sshd.getHighDegreeNode(degree_dict, now_budget)
+            mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
+            if mep_i_node == '-1':
+                break
+            continue
+
         seed_set[mep_k_prod].add(mep_i_node)
         now_budget += seed_cost_dict[mep_i_node]
 
