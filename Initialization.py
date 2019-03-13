@@ -224,7 +224,7 @@ class IniWallet:
             sigma = (max(price_list) - mu) / 0.8415
         elif self.dis == 2:
             mu = sum(price_list)
-            sigma = 1
+            sigma = abs(min(price_list) - mu) / 3
 
         fw = open('data/' + self.data_name + '/wallet_r' + list(self.prod_name)[list(self.prod_name).index('r') + 1] +
                   'p' + list(self.prod_name)[list(self.prod_name).index('p') + 1] +
@@ -327,26 +327,26 @@ if __name__ == '__main__':
     ### -- total wallet --
     ### -- email_undirected --
     ### -- r1p3n1_dis1 = 567.72 --
-    ### -- r1p3n1_dis2 = 1817.51 --
+    ### -- r1p3n1_dis2 = 1619.16 --
     ### -- r1p3n2_dis1 = 565.12 --
-    ### -- r1p3n2_dis2 = 1810.14 --
+    ### -- r1p3n2_dis2 = 1643.88 --
     ### -- dnc_email_directed --
     ### -- r1p3n1_dis1 = 1031.15 --
-    ### -- r1p3n1_dis2 = 3213.11 --
+    ### -- r1p3n1_dis2 = 2909.27 --
     ### -- r1p3n2_dis1 = 1033.83 --
-    ### -- r1p3n2_dis2 = 3224.84 --
+    ### -- r1p3n2_dis2 = 2921.09 --
     ### -- email_Eu_core_directed --
     ### -- r1p3n1_dis1 = 501.08 --
-    ### -- r1p3n1_dis2 = 1609.49 --
+    ### -- r1p3n1_dis2 = 1449.93 --
     ### -- r1p3n2_dis1 = 520.78 --
-    ### -- r1p3n2_dis2 = 1612.18 --
+    ### -- r1p3n2_dis2 = 1470.09 --
     ### -- WikiVote_directed --
     ### -- r1p3n1_dis1 = 4218.89 --
-    ### -- r1p3n1_dis2 = 13261.1 --
+    ### -- r1p3n1_dis2 = 11926.72 --
     ### -- r1p3n2_dis1 = 4231.82 --
-    ### -- r1p3n2_dis2 = 13374.82 --
+    ### -- r1p3n2_dis2 = 11959.68 --
     ### -- NetPHY_undirected --
     ### -- r1p3n1_dis1 = 18931.92 --
-    ### -- r1p3n1_dis2 = 59081.29 --
+    ### -- r1p3n1_dis2 = 53583.42 --
     ### -- r1p3n2_dis1 = 18878.49 --
-    ### -- r1p3n2_dis2 = 59100.57 --
+    ### -- r1p3n2_dis2 = 53455.58 --
