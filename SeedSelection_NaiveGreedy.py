@@ -23,7 +23,7 @@ class SeedSelectionNG:
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
         celf_seq = [[-1, '-1', 0.0, 0]]
 
-        diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.total_budget, self.monte)
+        diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
 
         for i in set(self.graph_dict.keys()):
             # -- the cost of seed cannot exceed the budget --
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # -- initialization for each budget --
     start_time = time.time()
     ssng = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
-    diff = Diffusion(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
+    diff = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
 
     # -- initialization for each sample --
     now_budget, now_profit = 0.0, 0.0
