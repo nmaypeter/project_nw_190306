@@ -1,13 +1,13 @@
-50%常禦眔癬
+计癸坝珇基钡50%常禦眔癬
 
 price_list = [[0.24, 0.48, 0.72]]
 mu = sum(price_list[pk])
-sigma = 1
+sigma = abs(min(price_list_g[pk]) - mu_g) / 3
 
-禦眔癬0	0.8849
-禦眔癬1	0.8315
-禦眔癬2	0.7642
-禦眔癬0+1	0.7642
-禦眔癬0+2	0.6844
-禦眔癬1+2	0.5948
+禦眔癬0	0.9987
+禦眔癬1	0.9918
+禦眔癬2	0.9641
+禦眔癬0+1	0.9641
+禦眔癬0+2	0.8849
+禦眔癬1+2	0.7257
 禦眔癬0+1+2	0.5
