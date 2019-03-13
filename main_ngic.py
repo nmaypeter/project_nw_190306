@@ -28,76 +28,28 @@ if __name__ == '__main__':
                         num_product = len(product_list)
 
                         seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
+                        ssng_main = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, total_budget, monte_carlo)
+                        diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
                         for sample_count in range(sample_number):
-                            tss_strat_time = time.time()
-                            ssng_main = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, total_budget, monte_carlo)
-                            diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
-
-                            begin_budget = 1
-                            temp_sequence = []
-                            now_budget, now_profit = 0.0, 0.0
-                            seed_set = [set() for _ in range(num_product)]
-
+                            ss_strat_time = time.time()
                             celf_sequence = ssng_main.generateCelfSequence()
-                            mep_g = celf_sequence.pop(0)
-                            mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
-
-                            while now_budget < total_budget and mep_i_node != '-1':
-                                sc = seed_cost_dict[mep_i_node]
-                                if now_budget + seed_cost_dict[mep_i_node] > total_budget:
-                                    mep_g = celf_sequence.pop(0)
-                                    mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
-                                    if mep_i_node == '-1':
-                                        break
-                                    continue
-
-                                seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
-                                if mep_flag == seed_set_length:
-                                    if now_budget + seed_cost_dict[mep_i_node] >= begin_budget:
-                                        print('@ mngic temp seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
-                                              ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
-                                        tss_time = round(time.time() - tss_strat_time, 2)
-                                        temp_sequence.append([now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), tss_time])
-                                        begin_budget += 1
-                                    if begin_budget > total_budget:
-                                        break
-                                    seed_set[mep_k_prod].add(mep_i_node)
-                                    ep_g = 0.0
-                                    for _ in range(monte_carlo):
-                                        ep_g += diff_main.getSeedSetProfit(seed_set)
-                                    now_profit = round(ep_g / monte_carlo, 4)
-                                    now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
-                                else:
-                                    ep_g = 0.0
-                                    for _ in range(monte_carlo):
-                                        ep_g += diff_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
-                                    ep_g = round(ep_g / monte_carlo, 4)
-                                    mg_g = round(ep_g - now_profit, 4)
-                                    ep_flag = seed_set_length
-
-                                    if mg_g <= 0:
-                                        continue
-                                    celf_ep_g = [mep_k_prod, mep_i_node, mg_g, ep_flag]
-                                    celf_sequence.append(celf_ep_g)
-                                    for celf_item_g in celf_sequence:
-                                        if celf_ep_g[2] >= celf_item_g[2]:
-                                            celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
-                                            celf_sequence.pop()
-                                            break
-
+                            temp_sequence = [[1, 0.0, 0.0, [set() for _ in range(num_product)], copy.deepcopy(celf_sequence), round(time.time() - ss_strat_time, 2)]]
+                            while len(temp_sequence) != 0:
+                                ss_strat_time = time.time()
+                                begin_budget, now_profit, now_budget, seed_set, celf_sequence, ss_acc_time = temp_sequence.pop(0)
+                                print('@ mngic temp seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
+                                      ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                 mep_g = celf_sequence.pop(0)
                                 mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
-                            for bud in range(1, total_budget + 1):
-                                print('@ mngic seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
-                                      ', product_name = ' + product_name + ', budget = ' + str(bud) + ', sample_count = ' + str(sample_count))
-                                now_budget, now_profit, seed_set, celf_sequence, tss_time = temp_sequence[bud - 1]
-                                ss_strat_time = time.time()
+                                while now_budget <= begin_budget and mep_i_node != '-1':
+                                    if now_budget + seed_cost_dict[mep_i_node] > begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
+                                        ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
+                                        temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), ss_time])
 
-                                while now_budget < bud and mep_i_node != '-1':
-                                    if now_budget + seed_cost_dict[mep_i_node] > bud:
+                                    if now_budget + seed_cost_dict[mep_i_node] > begin_budget:
                                         mep_g = celf_sequence.pop(0)
-                                        mep_k_prod, mep_i_node, mep_mg, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                        mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
                                         if mep_i_node == '-1':
                                             break
                                         continue
@@ -129,12 +81,12 @@ if __name__ == '__main__':
                                                 break
 
                                     mep_g = celf_sequence.pop(0)
-                                    mep_k_prod, mep_i_node, mep_mg, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                    mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
-                                ss_time = round(time.time() - ss_strat_time, 2)
+                                ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                 print('ss_time = ' + str(ss_time) + 'sec')
-                                seed_set_sequence[bud - 1].append(copy.deepcopy(seed_set))
-                                ss_time_sequence[bud - 1].append(ss_time)
+                                seed_set_sequence[begin_budget - 1].append(copy.deepcopy(seed_set))
+                                ss_time_sequence[begin_budget - 1].append(ss_time)
 
                         eva_start_time = time.time()
                         for bud in range(1, total_budget + 1):
@@ -206,8 +158,7 @@ if __name__ == '__main__':
                                 fw.write('mngic, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
                                          'data_set_name = ' + data_set_name + ', product_name = ' + product_name + '\n' +
                                          'total_budget = ' + str(bud) + ', sample_count = ' + str(sample_number) + '\n' +
-                                         'avg_profit = ' + str(avg_pro) +
-                                         ', avg_budget = ' + str(avg_bud) + '\n' +
+                                         'avg_profit = ' + str(avg_pro) + ', avg_budget = ' + str(avg_bud) + '\n' +
                                          'total_time = ' + str(total_time) + ', avg_time = ' + str(round(total_time / sample_number, 4)) + '\n')
                                 fw.write('\nprofit_ratio =')
                                 for kk in range(num_product):
