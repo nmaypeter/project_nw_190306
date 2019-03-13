@@ -1,7 +1,7 @@
 50%人全都買得起。
 
 price_list = [[0.24, 0.48, 0.72]]
-mu = mu = sum(price_list[pk])
+mu = sum(price_list[pk])
 sigma = 1
 
 買得起0	0.8849
