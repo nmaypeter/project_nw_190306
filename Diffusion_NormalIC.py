@@ -3,18 +3,16 @@ import copy
 
 
 class Diffusion:
-    def __init__(self, g_dict, s_c_dict, prod_list, total_bud, monte):
+    def __init__(self, g_dict, s_c_dict, prod_list, monte):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### total_bud: (int) the budget to select seed
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
         ### monte: (int) monte carlo times
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
-        self.total_budget = total_bud
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.monte = monte
@@ -166,11 +164,10 @@ class Diffusion:
 
 
 class DiffusionPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, total_bud, monte, p_w_list):
+    def __init__(self, g_dict, s_c_dict, prod_list, monte, p_w_list):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### total_bud: (int) the budget to select seed
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
         ### monte: (int) monte carlo times
@@ -178,7 +175,6 @@ class DiffusionPW:
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
-        self.total_budget = total_bud
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.monte = monte
