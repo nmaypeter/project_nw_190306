@@ -2,17 +2,15 @@ from Diffusion_NormalIC import *
 
 
 class SeedSelectionR:
-    def __init__(self, g_dict, s_c_dict, prod_list, total_bud):
+    def __init__(self, g_dict, s_c_dict, prod_list):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### total_bud: (int) the budget to select seed
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
-        self.total_budget = total_bud
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
 
@@ -27,26 +25,11 @@ class SeedSelectionR:
                 product_num.remove(mep[0])
                 mep[0] = -1
             if len(product_num) == 0:
-                return mep
+                return mep, nb_set
         mep[1] = choice(list(nb_set[mep[0]]))
+        nb_set[mep[0]].remove(mep[1])
 
-        return mep
-
-    def updateNotbanSet(self, nb_set, cur_bud):
-        # -- remove the impossible seeds --
-        b_set = [set() for _ in range(self.num_product)]
-        for k in range(self.num_product):
-            for i in nb_set[k]:
-                # -- the cost of seed cannot exceed the budget --
-                if self.seed_cost_dict[i] + cur_bud > self.total_budget:
-                    b_set[k].add(i)
-
-        # -- remove the impossible seeds fom nban_set
-        for k in range(self.num_product):
-            for i in b_set[k]:
-                if i in nb_set[k]:
-                    nb_set[k].remove(i)
-        return nb_set
+        return mep, nb_set
 
 
 if __name__ == '__main__':
@@ -69,24 +52,28 @@ if __name__ == '__main__':
 
     # -- initialization for each budget --
     start_time = time.time()
-    ssr = SeedSelectionR(graph_dict, seed_cost_dict, product_list, total_budget)
+    ssr = SeedSelectionR(graph_dict, seed_cost_dict, product_list)
 
     # -- initialization for each sample_number --
     now_budget = 0.0
     seed_set = [set() for _ in range(num_product)]
 
     nban_set = [{ii for ii in graph_dict} for _ in range(num_product)]
-    nban_set = ssr.updateNotbanSet(nban_set, 0)
-    mep_g = ssr.selectRandomSeed(nban_set)
+    mep_g, nban_set = ssr.selectRandomSeed(nban_set)
     mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     # -- main --
     while now_budget < total_budget and mep_i_node != '-1':
+        if now_budget + seed_cost_dict[mep_i_node] > total_budget:
+            mep_g, nban_set = ssr.selectRandomSeed(nban_set)
+            mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
+            if mep_i_node == '-1':
+                break
+            continue
         seed_set[mep_k_prod].add(mep_i_node)
         now_budget += seed_cost_dict[mep_i_node]
 
-        nban_set = ssr.updateNotbanSet(nban_set, now_budget)
-        mep_g = ssr.selectRandomSeed(nban_set)
+        mep_g, nban_set = ssr.selectRandomSeed(nban_set)
         mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
