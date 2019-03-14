@@ -28,7 +28,7 @@ if __name__ == '__main__':
                         num_product = len(product_list)
 
                         seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
-                        ssng_main = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, total_budget, monte_carlo)
+                        ssng_main = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, monte_carlo)
                         diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
                         for sample_count in range(sample_number):
                             ss_strat_time = time.time()
