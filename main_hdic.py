@@ -28,7 +28,7 @@ if __name__ == '__main__':
                         num_product = len(product_list)
 
                         seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
-                        sshd_main = SeedSelectionHD(graph_dict, seed_cost_dict, product_list, total_budget)
+                        sshd_main = SeedSelectionHD(graph_dict, seed_cost_dict, product_list)
                         for sample_count in range(sample_number):
                             ss_strat_time = time.time()
                             degree_dict = sshd_main.constructDegreeDict(data_set_name)
@@ -36,9 +36,9 @@ if __name__ == '__main__':
                             while len(temp_sequence) != 0:
                                 ss_strat_time = time.time()
                                 begin_budget, now_profit, now_budget, seed_set, degree_dict, ss_acc_time = temp_sequence.pop(0)
-                                print('@ mngic temp seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
-                                      ', product_name = ' + product_name + ', budget = ' + str( begin_budget) + ', sample_count = ' + str(sample_count))
-                                mep_g, degree_dict = sshd_main.getHighDegreeNode(degree_dict, now_budget)
+                                print('@ mhdic seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
+                                      ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
+                                mep_g, degree_dict = sshd_main.getHighDegreeNode(degree_dict)
                                 mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
                                 while now_budget <= begin_budget and mep_i_node != '-1':
@@ -47,7 +47,7 @@ if __name__ == '__main__':
                                         temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(degree_dict), ss_time])
 
                                     if now_budget + seed_cost_dict[mep_i_node] > begin_budget:
-                                        mep_g, degree_dict = sshd.getHighDegreeNode(degree_dict, now_budget)
+                                        mep_g, degree_dict = sshd_main.getHighDegreeNode(degree_dict)
                                         mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
                                         if mep_i_node == '-1':
                                             break
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                                     seed_set[mep_k_prod].add(mep_i_node)
                                     now_budget += seed_cost_dict[mep_i_node]
 
-                                    mep_g, degree_dict = sshd_main.getHighDegreeNode(degree_dict, now_budget)
+                                    mep_g, degree_dict = sshd_main.getHighDegreeNode(degree_dict)
                                     mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
                                 ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
@@ -134,7 +134,7 @@ if __name__ == '__main__':
                                 fw.write('mhdic, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
                                          'data_set_name = ' + data_set_name + ', product_name = ' + product_name + '\n' +
                                          'total_budget = ' + str(bud) + ', sample_count = ' + str(sample_number) + '\n' +
-                                         'avg_profit = ' + str(avg_pro) +  ', avg_budget = ' + str(avg_bud) + '\n' +
+                                         'avg_profit = ' + str(avg_pro) + ', avg_budget = ' + str(avg_bud) + '\n' +
                                          'total_time = ' + str(total_time) + ', avg_time = ' + str(round(total_time / sample_number, 4)) + '\n')
                                 fw.write('\nprofit_ratio =')
                                 for kk in range(num_product):
