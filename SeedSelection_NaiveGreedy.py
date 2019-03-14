@@ -2,18 +2,16 @@ from Diffusion_NormalIC import *
 
 
 class SeedSelectionNG:
-    def __init__(self, g_dict, s_c_dict, prod_list, total_bud, monte):
+    def __init__(self, g_dict, s_c_dict, prod_list, monte):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### total_bud: (int) the budget to select seed
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
         ### monte: (int) monte carlo times
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
-        self.total_budget = total_bud
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.monte = monte
@@ -26,10 +24,6 @@ class SeedSelectionNG:
         diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
 
         for i in set(self.graph_dict.keys()):
-            # -- the cost of seed cannot exceed the budget --
-            if self.seed_cost_dict[i] > self.total_budget:
-                continue
-
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
             ep = 0.0
@@ -73,7 +67,7 @@ if __name__ == '__main__':
 
     # -- initialization for each budget --
     start_time = time.time()
-    ssng = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, total_budget, monte_carlo)
+    ssng = SeedSelectionNG(graph_dict, seed_cost_dict, product_list, monte_carlo)
     diff = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
 
     # -- initialization for each sample --
