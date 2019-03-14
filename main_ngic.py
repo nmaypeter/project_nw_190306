@@ -37,7 +37,7 @@ if __name__ == '__main__':
                             while len(temp_sequence) != 0:
                                 ss_strat_time = time.time()
                                 begin_budget, now_profit, now_budget, seed_set, celf_sequence, ss_acc_time = temp_sequence.pop(0)
-                                print('@ mngic temp seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
+                                print('@ mngic seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                       ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                 mep_g = celf_sequence.pop(0)
                                 mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
