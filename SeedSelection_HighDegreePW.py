@@ -2,18 +2,16 @@ from Diffusion_NormalIC import *
 
 
 class SeedSelectionHDPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, total_bud, dis):
+    def __init__(self, g_dict, s_c_dict, prod_list, dis):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### total_bud: (int) the budget to select seed
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
         ### dis: (int) wallet distribution
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
-        self.total_budget = total_bud
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.dis = dis
@@ -77,7 +75,8 @@ class SeedSelectionHDPW:
 
         return d_dict
 
-    def getHighDegreeNode(self, d_dict, cur_bud):
+    @staticmethod
+    def getHighDegreeNode(d_dict):
         # -- get the node with highest degree --
         mep = [-1, '-1']
         max_degree = -1
@@ -103,9 +102,6 @@ class SeedSelectionHDPW:
             d_dict[str(max_degree)].remove(mep)
             mep = list(mep)
 
-            if self.seed_cost_dict[mep[1]] + cur_bud > self.total_budget:
-                mep[1] = '-1'
-
         return mep, d_dict
 
 
@@ -129,7 +125,7 @@ if __name__ == '__main__':
 
     # -- initialization for each budget --
     start_time = time.time()
-    sshdpw = SeedSelectionHDPW(graph_dict, seed_cost_dict, product_list, total_budget, distribution_type)
+    sshdpw = SeedSelectionHDPW(graph_dict, seed_cost_dict, product_list, distribution_type)
     pw_list = sshdpw.getProductWeight()
 
     # -- initialization for each sample_number --
@@ -137,15 +133,21 @@ if __name__ == '__main__':
     seed_set = [set() for _ in range(num_product)]
 
     degree_dict = sshdpw.constructDegreeDict(data_set_name, pw_list)
-    mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict, now_budget)
+    mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict)
     mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     # -- main --
     while now_budget < total_budget and mep_i_node != '-1':
+        if now_budget + seed_cost_dict[mep_i_node] > total_budget:
+            mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict)
+            mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
+            if mep_i_node == '-1':
+                break
+            continue
         seed_set[mep_k_prod].add(mep_i_node)
         now_budget += seed_cost_dict[mep_i_node]
 
-        mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict, now_budget)
+        mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict)
         mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
