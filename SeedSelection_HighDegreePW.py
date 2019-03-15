@@ -24,7 +24,7 @@ class SeedSelectionHDPW:
             sigma = (max(price_list) - mu) / 0.8415
         elif self.dis == 2:
             mu = sum(price_list)
-            sigma = 1
+            sigma = abs(min(price_list) - mu) / 3
         X = np.arange(0, 2, 0.001)
         Y = stats.norm.sf(X, mu, sigma)
         product_weight_list = [round(float(Y[np.argwhere(X == p)]), 4) for p in price_list]
