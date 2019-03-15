@@ -1,52 +1,55 @@
 from SeedSelection_NaiveGreedyPW import *
 
 if __name__ == '__main__':
+    wpiwp_seq = [bool(0), bool(1)]
+    dis_sequence = [1, 2]
     data_setting_seq = [1]
     prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
-    begin_budget, total_budget = 1, 10
-    dis_sequence = [1, 2]
-    wpiwp_seq = [bool(0), bool(1)]
+    sample_number = 10
+    total_budget = 10
     pps_seq = [1, 2, 3]
     monte_carlo, eva_monte_carlo = 10, 100
-    sample_number = 10
-    for data_setting in data_setting_seq:
-        data_set_name = 'email_undirected' * (data_setting == 1) + 'dnc_email_directed' * (data_setting == 2) + 'email_Eu_core_directed' * (data_setting == 3) + \
-                        'WikiVote_directed' * (data_setting == 4) + 'NetPHY_undirected' * (data_setting == 5)
-        for wpiwp in wpiwp_seq:
-            for prod_setting in prod_setting_seq:
-                for prod_setting2 in prod_setting2_seq:
-                    product_name = 'r1p3n' + str(prod_setting) + 'a' * (prod_setting2 == 2) + 'b' * (prod_setting2 == 3)
+    for wpiwp in wpiwp_seq:
+        for distribution_type in dis_sequence:
+            for data_setting in data_setting_seq:
+                data_set_name = 'email_undirected' * (data_setting == 1) + 'dnc_email_directed' * (data_setting == 2) + 'email_Eu_core_directed' * (data_setting == 3) + \
+                                'WikiVote_directed' * (data_setting == 4) + 'NetPHY_undirected' * (data_setting == 5)
+                for prod_setting in prod_setting_seq:
+                    for prod_setting2 in prod_setting2_seq:
+                        product_name = 'r1p3n' + str(prod_setting) + 'a' * (prod_setting2 == 2) + 'b' * (prod_setting2 == 3)
 
-                    iniG = IniGraph(data_set_name)
-                    iniP = IniProduct(product_name)
+                        iniG = IniGraph(data_set_name)
+                        iniP = IniProduct(product_name)
 
-                    seed_cost_dict = iniG.constructSeedCostDict()
-                    graph_dict = iniG.constructGraphDict()
-                    product_list = iniP.getProductList()
-                    num_node = len(seed_cost_dict)
-                    num_product = len(product_list)
-                    for distribution_type in dis_sequence:
-                        for bud in range(begin_budget, total_budget + 1):
-                            start_time = time.time()
-                            ssngpw_main = SeedSelectionNGPW(graph_dict, seed_cost_dict, product_list, bud, distribution_type, monte_carlo)
-                            pw_list = ssngpw_main.getProductWeight()
-                            diffpw_main = DiffusionPW(graph_dict, seed_cost_dict, product_list, bud, monte_carlo, pw_list)
-                            seed_set_sequence = []
+                        seed_cost_dict = iniG.constructSeedCostDict()
+                        graph_dict = iniG.constructGraphDict()
+                        product_list = iniP.getProductList()
+                        num_node = len(seed_cost_dict)
+                        num_product = len(product_list)
 
-                            for sample_count in range(sample_number):
-                                print('@ mngpwic seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
-                                      ', product_name = ' + product_name + ', budget = ' + str(bud) + ', sample_count = ' + str(sample_count))
-                                now_budget, now_profit = 0.0, 0.0
-                                seed_set = [set() for _ in range(num_product)]
-
-                                celf_sequence = ssngpw_main.generateCelfSequence()
+                        seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
+                        ssngpw_main = SeedSelectionNGPW(graph_dict, seed_cost_dict, product_list, distribution_type, monte_carlo)
+                        diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
+                        for sample_count in range(sample_number):
+                            ss_strat_time = time.time()
+                            celf_sequence = ssngpw_main.generateCelfSequence()
+                            temp_sequence = [[1, 0.0, 0.0, [set() for _ in range(num_product)], copy.deepcopy(celf_sequence), round(time.time() - ss_strat_time, 2)]]
+                            while len(temp_sequence) != 0:
+                                ss_strat_time = time.time()
+                                begin_budget, now_profit, now_budget, seed_set, celf_sequence, ss_acc_time = temp_sequence.pop(0)
+                                print('@ mngpwic seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
+                                      ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                 mep_g = celf_sequence.pop(0)
-                                mep_k_prod, mep_i_node, mep_mg, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
-                                while now_budget < bud and mep_i_node != '-1':
-                                    if now_budget + seed_cost_dict[mep_i_node] > bud:
+                                while now_budget < begin_budget and mep_i_node != '-1':
+                                    if now_budget + seed_cost_dict[mep_i_node] > begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
+                                        ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
+                                        temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), ss_time])
+
+                                    if now_budget + seed_cost_dict[mep_i_node] > begin_budget:
                                         mep_g = celf_sequence.pop(0)
-                                        mep_k_prod, mep_i_node, mep_mg, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                        mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
                                         if mep_i_node == '-1':
                                             break
                                         continue
@@ -56,13 +59,13 @@ if __name__ == '__main__':
                                         seed_set[mep_k_prod].add(mep_i_node)
                                         ep_g = 0.0
                                         for _ in range(monte_carlo):
-                                            ep_g += diffpw_main.getSeedSetProfit(seed_set)
+                                            ep_g += diff_main.getSeedSetProfit(seed_set)
                                         now_profit = round(ep_g / monte_carlo, 4)
                                         now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
                                     else:
                                         ep_g = 0.0
                                         for _ in range(monte_carlo):
-                                            ep_g += diffpw_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
+                                            ep_g += diff_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
                                         ep_g = round(ep_g / monte_carlo, 4)
                                         mg_g = round(ep_g - now_profit, 4)
                                         ep_flag = seed_set_length
@@ -78,14 +81,16 @@ if __name__ == '__main__':
                                                 break
 
                                     mep_g = celf_sequence.pop(0)
-                                    mep_k_prod, mep_i_node, mep_mg, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                    mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
-                                del mep_k_prod, mep_i_node, mep_mg, mep_flag
-                                seed_set_sequence.append(seed_set)
-                            ss_time = round(time.time() - start_time, 2)
+                                ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
+                                print('ss_time = ' + str(ss_time) + 'sec')
+                                seed_set_sequence[begin_budget - 1].append(copy.deepcopy(seed_set))
+                                ss_time_sequence[begin_budget - 1].append(ss_time)
 
+                        eva_start_time = time.time()
+                        for bud in range(1, total_budget + 1):
                             result = [[] for _ in range(len(pps_seq))]
-
                             for pps in pps_seq:
                                 pps_start_time = time.time()
                                 avg_pro, avg_bud = 0.0, 0.0
@@ -96,8 +101,7 @@ if __name__ == '__main__':
                                 iniW = IniWallet(data_set_name, product_name, distribution_type)
                                 wallet_list = iniW.getWalletList()
                                 personal_prob_list = eva_main.setPersonalProbList(wallet_list)
-
-                                for sample_count, sample_seed_set in enumerate(seed_set_sequence):
+                                for sample_count, sample_seed_set in enumerate(seed_set_sequence[bud - 1]):
                                     print('@ mngpwic evaluation @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                           ', product_name = ' + product_name + ', budget = ' + str(bud) + ', pps = ' + str(pps) + ', sample_count = ' + str(sample_count))
                                     sample_pro_acc, sample_bud_acc = 0.0, 0.0
@@ -130,7 +134,7 @@ if __name__ == '__main__':
                                         avg_pro_k[kk] += sample_pro_k_acc[kk]
                                         avg_bud_k[kk] += sample_bud_k_acc[kk]
 
-                                    print('total_time: ' + str(round(time.time() - start_time, 2)) + 'sec')
+                                    print('eva_time = ' + str(round(time.time() - eva_start_time, 2)) + 'sec')
                                     print(result[pps - 1][sample_count])
                                     print('avg_profit = ' + str(round(avg_pro / (sample_count + 1), 4)) + ', avg_budget = ' + str(round(avg_bud / (sample_count + 1), 4)))
                                     print('------------------------------------------')
@@ -143,20 +147,18 @@ if __name__ == '__main__':
                                     avg_pro_k[kk] = round(avg_pro_k[kk] / sample_number, 4)
                                     avg_bud_k[kk] = round(avg_bud_k[kk] / sample_number, 2)
 
-                                pps_time = round(time.time() - pps_start_time, 2)
-                                total_time = round(ss_time + pps_time, 2)
+                                total_time = round(sum(ss_time_sequence[bud - 1]), 2)
                                 path1 = 'result/mngpwic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp
                                 if not os.path.isdir(path1):
                                     os.mkdir(path1)
                                 path = 'result/mngpwic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + product_name
                                 if not os.path.isdir(path):
                                     os.mkdir(path)
-                                fw = open(path + '/' + 'b' + str(bud) + '_i' + str(sample_number) + '.txt', 'w')
+                                fw = open(path + '/b' + str(bud) + '_i' + str(sample_number) + '.txt', 'w')
                                 fw.write('mngpwic, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
                                          'data_set_name = ' + data_set_name + ', product_name = ' + product_name + '\n' +
                                          'total_budget = ' + str(bud) + ', sample_count = ' + str(sample_number) + '\n' +
-                                         'avg_profit = ' + str(avg_pro) +
-                                         ', avg_budget = ' + str(avg_bud) + '\n' +
+                                         'avg_profit = ' + str(avg_pro) + ', avg_budget = ' + str(avg_bud) + '\n' +
                                          'total_time = ' + str(total_time) + ', avg_time = ' + str(round(total_time / sample_number, 4)) + '\n')
                                 fw.write('\nprofit_ratio =')
                                 for kk in range(num_product):
