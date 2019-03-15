@@ -2,11 +2,10 @@ from Diffusion_NormalIC import *
 
 
 class SeedSelectionNGPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, total_bud, dis, monte):
+    def __init__(self, g_dict, s_c_dict, prod_list, dis, monte):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### total_bud: (int) the budget to select seed
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
         ### dis: (int) wallet distribution
@@ -14,7 +13,6 @@ class SeedSelectionNGPW:
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
-        self.total_budget = total_bud
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.dis = dis
@@ -28,7 +26,7 @@ class SeedSelectionNGPW:
             sigma = (max(price_list) - mu) / 0.8415
         elif self.dis == 2:
             mu = sum(price_list)
-            sigma = 1
+            sigma = abs(min(price_list) - mu) / 3
         X = np.arange(0, 2, 0.001)
         Y = stats.norm.sf(X, mu, sigma)
         product_weight_list = [round(float(Y[np.argwhere(X == p)]), 4) for p in price_list]
@@ -43,10 +41,6 @@ class SeedSelectionNGPW:
         diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
 
         for i in set(self.graph_dict.keys()):
-            # -- the cost of seed cannot exceed the budget --
-            if self.seed_cost_dict[i] > self.total_budget:
-                continue
-
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
             ep = 0.0
@@ -90,7 +84,7 @@ if __name__ == '__main__':
 
     # -- initialization for each budget --
     start_time = time.time()
-    ssngpw = SeedSelectionNGPW(graph_dict, seed_cost_dict, product_list, total_budget, distribution_type, monte_carlo)
+    ssngpw = SeedSelectionNGPW(graph_dict, seed_cost_dict, product_list, distribution_type, monte_carlo)
     pw_list = ssngpw.getProductWeight()
     diffpw = DiffusionPW(graph_dict, seed_cost_dict, product_list, monte_carlo, pw_list)
 
