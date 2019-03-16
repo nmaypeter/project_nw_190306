@@ -1,85 +1,141 @@
 from SeedSelection_PMIS import *
 
 if __name__ == '__main__':
+    wpiwp_seq = [bool(0), bool(1)]
+    dis_sequence = [1, 2]
     data_setting_seq = [1]
     prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
-    begin_budget, total_budget = 1, 10
-    dis_sequence = [1, 2]
-    wpiwp_seq = [bool(0), bool(1)]
+    sample_number = 10
+    total_budget = 10
     pps_seq = [1, 2, 3]
     monte_carlo, eva_monte_carlo = 10, 100
-    sample_number = 10
-    for data_setting in data_setting_seq:
-        data_set_name = 'email_undirected' * (data_setting == 1) + 'dnc_email_directed' * (data_setting == 2) + 'email_Eu_core_directed' * (data_setting == 3) + \
-                        'WikiVote_directed' * (data_setting == 4) + 'NetPHY_undirected' * (data_setting == 5)
-        for wpiwp in wpiwp_seq:
-            for prod_setting in prod_setting_seq:
-                for prod_setting2 in prod_setting2_seq:
-                    product_name = 'r1p3n' + str(prod_setting) + 'a' * (prod_setting2 == 2) + 'b' * (prod_setting2 == 3)
+    for wpiwp in wpiwp_seq:
+        for distribution_type in dis_sequence:
+            for data_setting in data_setting_seq:
+                data_set_name = 'email_undirected' * (data_setting == 1) + 'dnc_email_directed' * (data_setting == 2) + 'email_Eu_core_directed' * (data_setting == 3) + \
+                                'WikiVote_directed' * (data_setting == 4) + 'NetPHY_undirected' * (data_setting == 5)
+                for prod_setting in prod_setting_seq:
+                    for prod_setting2 in prod_setting2_seq:
+                        product_name = 'r1p3n' + str(prod_setting) + 'a' * (prod_setting2 == 2) + 'b' * (prod_setting2 == 3)
 
-                    iniG = IniGraph(data_set_name)
-                    iniP = IniProduct(product_name)
+                        iniG = IniGraph(data_set_name)
+                        iniP = IniProduct(product_name)
 
-                    seed_cost_dict = iniG.constructSeedCostDict()
-                    graph_dict = iniG.constructGraphDict()
-                    product_list = iniP.getProductList()
-                    num_node = len(seed_cost_dict)
-                    num_product = len(product_list)
+                        seed_cost_dict = iniG.constructSeedCostDict()
+                        graph_dict = iniG.constructGraphDict()
+                        product_list = iniP.getProductList()
+                        num_node = len(seed_cost_dict)
+                        num_product = len(product_list)
 
-                    for bud in range(begin_budget, total_budget + 1):
-                        start_time = time.time()
-                        sspmis_main = SeedSelectionPMIS(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
-                        diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, bud, monte_carlo)
-                        seed_set_sequence = []
-
+                        seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
+                        sspmis_main = SeedSelectionPMIS(graph_dict, seed_cost_dict, product_list, monte_carlo)
+                        diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
                         for sample_count in range(sample_number):
-                            print('@ mpmisic seed selection @ data_set_name = ' + data_set_name + ', wpiwp = ' + str(wpiwp) +
-                                  ', product_name = ' + product_name + ', budget = ' + str(bud) + ', sample_count = ' + str(sample_count))
-                            mep_result = [0.0, [set() for _ in range(num_product)]]
-                            s_matrix, c_matrix = sspmis_main.generateDecomposedResult()
-                            bud_index, bud_bound_index = [len(kk) - 1 for kk in c_matrix], [0 for _ in range(num_product)]
-                            temp_bound_index = [0 for _ in range(num_product)]
-
-                            while not operator.eq(bud_index, bud_bound_index):
-                                ### bud_pmis: (float) the budget in this pmis execution
-                                bud_pmis = 0.0
+                            ss_strat_time = time.time()
+                            celf_sequence = sspmis_main.generateCelfSequence()
+                            temp_sequence = [[1, 0.0, 0.0, [set() for _ in range(num_product)], copy.deepcopy(celf_sequence),
+                                              [[] for _ in range(num_product)], [[] for _ in range(num_product)], round(time.time() - ss_strat_time, 2)]]
+                            while len(temp_sequence) != 0:
+                                ss_strat_time = time.time()
+                                begin_budget, now_profit, now_budget, seed_set, celf_sequence, s_matrix, c_matrix, ss_acc_time = temp_sequence.pop(0)
+                                print('@ mpmisic seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
+                                      ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                 for kk in range(num_product):
-                                    bud_pmis += copy.deepcopy(c_matrix)[kk][bud_index[kk]]
+                                    s_matrix[kk].append([set() for _ in range(num_product)])
+                                    c_matrix[kk].append(0.0)
 
-                                if bud_pmis <= bud:
-                                    temp_bound_flag = 1
+                                    cur_budget, cur_profit = 0.0, 0.0
+                                    seed_set_t = [set() for _ in range(num_product)]
+
+                                    mep = celf_sequence[kk].pop(0)
+                                    mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+
+                                    while cur_budget < begin_budget and mep_i_node != '-1':
+                                        if now_budget + seed_cost_dict[mep_i_node] > begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
+                                            ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
+                                            temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), ss_time])
+
+                                        if cur_budget + seed_cost_dict[mep_i_node] > begin_budget:
+                                            mep = celf_sequence[kk].pop(0)
+                                            mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+                                            if mep_i_node == '-1':
+                                                break
+                                            continue
+
+                                        seed_set_length = sum(len(seed_set_t[k]) for k in range(num_product))
+                                        if mep_flag == seed_set_length:
+                                            seed_set_t[mep_k_prod].add(mep_i_node)
+                                            ep_g = 0.0
+                                            for _ in range(monte_carlo):
+                                                ep_g += diff_main.getSeedSetProfit(seed_set_t)
+                                            cur_profit = round(ep_g / monte_carlo, 4)
+                                            cur_budget = round(cur_budget + seed_cost_dict[mep_i_node], 2)
+                                            s_matrix[kk].append(copy.deepcopy(seed_set_t))
+                                            c_matrix[kk].append(round(cur_budget, 2))
+                                        else:
+                                            ep1_g = 0.0
+                                            for _ in range(monte_carlo):
+                                                ep1_g += diff_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set_t)
+                                            ep1_g = round(ep1_g / monte_carlo, 4)
+                                            mep_mg = round(ep1_g - cur_profit, 4)
+                                            mep_flag = seed_set_length
+
+                                            if mep_mg <= 0:
+                                                continue
+                                            celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
+                                            celf_sequence[kk].append(celf_ep_g)
+                                            for celf_item_g in celf_sequence[kk]:
+                                                if celf_ep_g[2] >= celf_item_g[2]:
+                                                    celf_sequence[kk].insert(celf_sequence[kk].index(celf_item_g), celf_ep_g)
+                                                    celf_sequence[kk].pop()
+                                                    break
+
+                                        mep = celf_sequence[kk].pop(0)
+                                        mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+
+                                mep_result = [0.0, [set() for _ in range(num_product)]]
+                                ### bud_index: (list) the using budget index for products
+                                ### bud_bound_index: (list) the bound budget index for products
+                                bud_index, bud_bound_index = [len(kk) - 1 for kk in c_matrix], [0 for _ in range(num_product)]
+                                ### temp_bound_index: (list) the bound to exclude the impossible budget combination s.t. the k-budget is smaller than the temp bound
+                                temp_bound_index = [0 for _ in range(num_product)]
+
+                                while not operator.eq(bud_index, bud_bound_index):
+                                    ### bud_pmis: (float) the budget in this pmis execution
+                                    bud_pmis = 0.0
                                     for kk in range(num_product):
-                                        if temp_bound_index[kk] > bud_index[kk]:
-                                            temp_bound_flag = 0
-                                            break
-                                    if temp_bound_flag:
-                                        temp_bound_index = copy.deepcopy(bud_index)
+                                        bud_pmis += copy.deepcopy(c_matrix)[kk][bud_index[kk]]
 
+                                    if bud_pmis <= begin_budget:
+                                        temp_bound_index = copy.deepcopy(bud_index)
                                         # -- pmis execution --
-                                        seed_set_t = [set() for _ in range(num_product)]
+                                        seed_set = [set() for _ in range(num_product)]
                                         for kk in range(num_product):
-                                            seed_set_t[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
+                                            seed_set[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
 
                                         pro_acc = 0.0
                                         for _ in range(monte_carlo):
-                                            pro_acc += diff_main.getSeedSetProfit(seed_set_t)
+                                            pro_acc += diff_main.getSeedSetProfit(seed_set)
                                         pro_acc = round(pro_acc / monte_carlo, 4)
 
                                         if pro_acc > mep_result[0]:
-                                            mep_result = [pro_acc, seed_set_t]
+                                            mep_result = [pro_acc, seed_set]
 
-                                pointer = num_product - 1
-                                while bud_index[pointer] == bud_bound_index[pointer]:
-                                    bud_index[pointer] = len(c_matrix[pointer]) - 1
-                                    pointer -= 1
-                                bud_index[pointer] -= 1
-                            seed_set = mep_result[1]
+                                    pointer = num_product - 1
+                                    while bud_index[pointer] == bud_bound_index[pointer]:
+                                        bud_index[pointer] = len(c_matrix[pointer]) - 1
+                                        pointer -= 1
+                                    bud_index[pointer] -= 1
+                                seed_set = mep_result[1]
 
-                            seed_set_sequence.append(seed_set)
-                        ss_time = round(time.time() - start_time, 2)
+                                ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
+                                print('ss_time = ' + str(ss_time) + 'sec')
+                                seed_set_sequence[begin_budget - 1].append(copy.deepcopy(seed_set))
+                                ss_time_sequence[begin_budget - 1].append(ss_time)
 
-                        result = [[] for _ in range(len(pps_seq))]
-                        for distribution_type in dis_sequence:
+                        eva_start_time = time.time()
+                        for bud in range(1, total_budget + 1):
+                            result = [[] for _ in range(len(pps_seq))]
                             for pps in pps_seq:
                                 pps_start_time = time.time()
                                 avg_pro, avg_bud = 0.0, 0.0
@@ -90,9 +146,8 @@ if __name__ == '__main__':
                                 iniW = IniWallet(data_set_name, product_name, distribution_type)
                                 wallet_list = iniW.getWalletList()
                                 personal_prob_list = eva_main.setPersonalProbList(wallet_list)
-
-                                for sample_count, sample_seed_set in enumerate(seed_set_sequence):
-                                    print('@ mpmisic evaluation @ data_set_name = ' + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
+                                for sample_count, sample_seed_set in enumerate(seed_set_sequence[bud - 1]):
+                                    print('@ mpmisic evaluation @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                           ', product_name = ' + product_name + ', budget = ' + str(bud) + ', pps = ' + str(pps) + ', sample_count = ' + str(sample_count))
                                     sample_pro_acc, sample_bud_acc = 0.0, 0.0
                                     sample_sn_k_acc, sample_pnn_k_acc = [0.0 for _ in range(num_product)], [0 for _ in range(num_product)]
@@ -124,7 +179,7 @@ if __name__ == '__main__':
                                         avg_pro_k[kk] += sample_pro_k_acc[kk]
                                         avg_bud_k[kk] += sample_bud_k_acc[kk]
 
-                                    print('total_time: ' + str(round(time.time() - start_time, 2)) + 'sec')
+                                    print('eva_time = ' + str(round(time.time() - eva_start_time, 2)) + 'sec')
                                     print(result[pps - 1][sample_count])
                                     print('avg_profit = ' + str(round(avg_pro / (sample_count + 1), 4)) + ', avg_budget = ' + str(round(avg_bud / (sample_count + 1), 4)))
                                     print('------------------------------------------')
@@ -137,20 +192,18 @@ if __name__ == '__main__':
                                     avg_pro_k[kk] = round(avg_pro_k[kk] / sample_number, 4)
                                     avg_bud_k[kk] = round(avg_bud_k[kk] / sample_number, 2)
 
-                                pps_time = round(time.time() - pps_start_time, 2)
-                                total_time = round(ss_time + pps_time, 2)
+                                total_time = round(sum(ss_time_sequence[bud - 1]), 2)
                                 path1 = 'result/mpmisic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp
                                 if not os.path.isdir(path1):
                                     os.mkdir(path1)
                                 path = 'result/mpmisic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + product_name
                                 if not os.path.isdir(path):
                                     os.mkdir(path)
-                                fw = open(path + '/' + 'b' + str(bud) + '_i' + str(sample_number) + '.txt', 'w')
+                                fw = open(path + '/b' + str(bud) + '_i' + str(sample_number) + '.txt', 'w')
                                 fw.write('mpmisic, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
                                          'data_set_name = ' + data_set_name + ', product_name = ' + product_name + '\n' +
                                          'total_budget = ' + str(bud) + ', sample_count = ' + str(sample_number) + '\n' +
-                                         'avg_profit = ' + str(avg_pro) +
-                                         ', avg_budget = ' + str(avg_bud) + '\n' +
+                                         'avg_profit = ' + str(avg_pro) + ', avg_budget = ' + str(avg_bud) + '\n' +
                                          'total_time = ' + str(total_time) + ', avg_time = ' + str(round(total_time / sample_number, 4)) + '\n')
                                 fw.write('\nprofit_ratio =')
                                 for kk in range(num_product):
