@@ -58,6 +58,7 @@ class SeedSelectionNGRPW:
                 else:
                     mg_ratio = round(mg / self.seed_cost_dict[i], 4)
                 celf_ep = [k, i, mg_ratio, 0]
+                celf_seq.append(celf_ep)
                 for celf_item in celf_seq:
                     if celf_ep[2] >= celf_item[2]:
                         celf_seq.insert(celf_seq.index(celf_item), celf_ep)
