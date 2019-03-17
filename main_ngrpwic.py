@@ -29,13 +29,14 @@ if __name__ == '__main__':
 
                         seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
                         ssngrpw_main = SeedSelectionNGRPW(graph_dict, seed_cost_dict, product_list, distribution_type, monte_carlo)
+                        p_w_list = ssngrpw_main.getProductWeight()
                         diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
                         for sample_count in range(sample_number):
                             ss_strat_time = time.time()
                             begin_budget = 1
                             now_budget, now_profit = 0.0, 0.0
                             seed_set = [set() for _ in range(num_product)]
-                            celf_sequence = ssngrpw_main.generateCelfSequence()
+                            celf_sequence = ssngrpw_main.generateCelfSequence(p_w_list)
                             ss_acc_time = round(time.time() - ss_strat_time, 2)
                             temp_sequence = [[begin_budget, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), ss_acc_time]]
                             while len(temp_sequence) != 0:
