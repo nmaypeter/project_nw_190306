@@ -41,7 +41,7 @@ if __name__ == '__main__':
                             while len(temp_sequence) != 0:
                                 ss_strat_time = time.time()
                                 begin_budget, now_budget, now_profit, seed_set, celf_sequence, ss_acc_time = temp_sequence.pop(0)
-                                print('@ mngric seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
+                                print('@ mngapric seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                       ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                 mep_g = celf_sequence.pop(0)
                                 mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
@@ -111,7 +111,7 @@ if __name__ == '__main__':
                                 wallet_list = iniW.getWalletList()
                                 personal_prob_list = eva_main.setPersonalProbList(wallet_list)
                                 for sample_count, sample_seed_set in enumerate(seed_set_sequence[bud - 1]):
-                                    print('@ mngric evaluation @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
+                                    print('@ mngapric evaluation @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                           ', product_name = ' + product_name + ', budget = ' + str(bud) + ', pps = ' + str(pps) + ', sample_count = ' + str(sample_count))
                                     sample_pro_acc, sample_bud_acc = 0.0, 0.0
                                     sample_sn_k_acc, sample_pnn_k_acc = [0.0 for _ in range(num_product)], [0 for _ in range(num_product)]
@@ -157,14 +157,14 @@ if __name__ == '__main__':
                                     avg_bud_k[kk] = round(avg_bud_k[kk] / sample_number, 2)
 
                                 total_time = round(sum(ss_time_sequence[bud - 1]), 2)
-                                path1 = 'result/mngric_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp
+                                path1 = 'result/mngapric_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp
                                 if not os.path.isdir(path1):
                                     os.mkdir(path1)
-                                path = 'result/mngric_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + product_name
+                                path = 'result/mngapric_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + product_name
                                 if not os.path.isdir(path):
                                     os.mkdir(path)
                                 fw = open(path + '/b' + str(bud) + '_i' + str(sample_number) + '.txt', 'w')
-                                fw.write('mngric, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
+                                fw.write('mngapric, pp_strategy = ' + str(pps) + ', total_budget = ' + str(bud) + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) + '\n' +
                                          'data_set_name = ' + data_set_name + ', product_name = ' + product_name + '\n' +
                                          'total_budget = ' + str(bud) + ', sample_count = ' + str(sample_number) + '\n' +
                                          'avg_profit = ' + str(avg_pro) + ', avg_budget = ' + str(avg_bud) + '\n' +
