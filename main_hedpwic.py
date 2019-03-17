@@ -32,8 +32,12 @@ if __name__ == '__main__':
                         pw_list = sshedpw_main.getProductWeight()
                         for sample_count in range(sample_number):
                             ss_strat_time = time.time()
+                            begin_budget = 1
+                            now_budget = 0.0
+                            seed_set = [set() for _ in range(num_product)]
                             degree_dict = sshedpw_main.constructExpendDegreeDict(pw_list)
-                            temp_sequence = [[1, 0.0, 0.0, [set() for _ in range(num_product)], copy.deepcopy(degree_dict), round(time.time() - ss_strat_time, 2)]]
+                            ss_acc_time = round(time.time() - ss_strat_time, 2)
+                            temp_sequence = [[begin_budget, now_budget, copy.deepcopy(seed_set), copy.deepcopy(degree_dict), ss_acc_time]]
                             while len(temp_sequence) != 0:
                                 ss_strat_time = time.time()
                                 begin_budget, now_profit, now_budget, seed_set, degree_dict, ss_acc_time = temp_sequence.pop(0)
@@ -43,11 +47,12 @@ if __name__ == '__main__':
                                 mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
                                 while now_budget < begin_budget and mep_i_node != '-1':
-                                    if now_budget + seed_cost_dict[mep_i_node] > begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
+                                    sc = seed_cost_dict[mep_i_node]
+                                    if now_budget + sc >= begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
                                         ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
-                                        temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(degree_dict), ss_time])
+                                        temp_sequence.append([begin_budget + 1, now_budget, copy.deepcopy(seed_set), copy.deepcopy(degree_dict), ss_time])
 
-                                    if now_budget + seed_cost_dict[mep_i_node] > begin_budget:
+                                    if now_budget + sc > begin_budget:
                                         mep_g, degree_dict = sshedpw_main.getHighDegreeNode(degree_dict)
                                         mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
                                         if mep_i_node == '-1':
