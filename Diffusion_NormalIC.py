@@ -326,6 +326,254 @@ class DiffusionPW:
         return round(ep, 4)
 
 
+class DiffusionAccProb:
+    def __init__(self, g_dict, s_c_dict, prod_list):
+        ### g_dict: (dict) the graph
+        ### s_c_dict: (dict) the set of cost for seeds
+        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
+        ### num_node: (int) the number of nodes
+        ### num_product: (int) the kinds of products
+        self.graph_dict = g_dict
+        self.seed_cost_dict = s_c_dict
+        self.product_list = prod_list
+        self.num_node = len(s_c_dict)
+        self.num_product = len(prod_list)
+
+    def getExpectedProfit(self, k_prod, i_node, s_set):
+        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
+        ### ep: (float2) the expected profit
+        s_set_t = copy.deepcopy(s_set)
+        s_set_t[k_prod].add(i_node)
+        union_seed_set = set()
+        for k in range(self.num_product):
+            union_seed_set = union_seed_set | s_set_t[k]
+        ep = 0.0
+
+        for k in range(self.num_product):
+            i_dict = {}
+            for i in s_set_t[k]:
+                if i in self.graph_dict:
+                    for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
+                        if ii not in i_dict:
+                            i_dict[ii] = ['0.1']
+                        elif ii in i_dict:
+                            i_dict[ii].append('0.1')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii in union_seed_set:
+                                continue
+                            if iii not in i_dict:
+                                i_dict[iii] = ['0.01']
+                            elif ii in i_dict:
+                                i_dict[iii].append('0.01')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii not in self.graph_dict:
+                                continue
+                            for iiii in self.graph_dict[ii]:
+                                if iiii in union_seed_set:
+                                    continue
+                                if iiii not in i_dict:
+                                    i_dict[iiii] = ['0.001']
+                                elif iiii in i_dict:
+                                    i_dict[iiii].append('0.001')
+
+            for i in i_dict:
+                acc_prob = 1.0
+                for prob in i_dict[i]:
+                    acc_prob *= (1 - float(prob))
+                ep += ((1 - acc_prob) * self.product_list[k][0])
+
+        return round(ep, 4)
+
+    def getSeedSetProfit(self, s_set):
+        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
+        ### ep: (float2) the expected profit
+        s_set_t = copy.deepcopy(s_set)
+        union_seed_set = set()
+        for k in range(self.num_product):
+            union_seed_set = union_seed_set | s_set_t[k]
+        ep = 0.0
+
+        for k in range(self.num_product):
+            i_dict = {}
+            for i in s_set_t[k]:
+                if i in self.graph_dict:
+                    for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
+                        if ii not in i_dict:
+                            i_dict[ii] = ['0.1']
+                        elif ii in i_dict:
+                            i_dict[ii].append('0.1')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii in union_seed_set:
+                                continue
+                            if iii not in i_dict:
+                                i_dict[iii] = ['0.01']
+                            elif ii in i_dict:
+                                i_dict[iii].append('0.01')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii not in self.graph_dict:
+                                continue
+                            for iiii in self.graph_dict[ii]:
+                                if iiii in union_seed_set:
+                                    continue
+                                if iiii not in i_dict:
+                                    i_dict[iiii] = ['0.001']
+                                elif iiii in i_dict:
+                                    i_dict[iiii].append('0.001')
+
+            for i in i_dict:
+                acc_prob = 1.0
+                for prob in i_dict[i]:
+                    acc_prob *= (1 - float(prob))
+                ep += ((1 - acc_prob) * self.product_list[k][0])
+
+        return round(ep, 4)
+
+
+class DiffusionAccProbPW:
+    def __init__(self, g_dict, s_c_dict, prod_list, p_w_list):
+        ### g_dict: (dict) the graph
+        ### s_c_dict: (dict) the set of cost for seeds
+        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
+        ### num_node: (int) the number of nodes
+        ### num_product: (int) the kinds of products
+        ### p_w_list: (list) the product weight list
+        self.graph_dict = g_dict
+        self.seed_cost_dict = s_c_dict
+        self.product_list = prod_list
+        self.num_node = len(s_c_dict)
+        self.num_product = len(prod_list)
+        self.pw_list = p_w_list
+
+    def getExpectedProfit(self, k_prod, i_node, s_set):
+        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
+        ### ep: (float2) the expected profit
+        s_set_t = copy.deepcopy(s_set)
+        s_set_t[k_prod].add(i_node)
+        union_seed_set = set()
+        for k in range(self.num_product):
+            union_seed_set = union_seed_set | s_set_t[k]
+        ep = 0.0
+
+        for k in range(self.num_product):
+            i_dict = {}
+            for i in s_set_t[k]:
+                if i in self.graph_dict:
+                    for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
+                        if ii not in i_dict:
+                            i_dict[ii] = ['0.1']
+                        elif ii in i_dict:
+                            i_dict[ii].append('0.1')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii in union_seed_set:
+                                continue
+                            if iii not in i_dict:
+                                i_dict[iii] = ['0.01']
+                            elif ii in i_dict:
+                                i_dict[iii].append('0.01')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii not in self.graph_dict:
+                                continue
+                            for iiii in self.graph_dict[ii]:
+                                if iiii in union_seed_set:
+                                    continue
+                                if iiii not in i_dict:
+                                    i_dict[iiii] = ['0.001']
+                                elif iiii in i_dict:
+                                    i_dict[iiii].append('0.001')
+
+            for i in i_dict:
+                acc_prob = 1.0
+                for prob in i_dict[i]:
+                    acc_prob *= (1 - float(prob))
+                ep += ((1 - acc_prob) * self.product_list[k][0] * self.pw_list[k])
+
+        return round(ep, 4)
+
+    def getSeedSetProfit(self, s_set):
+        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
+        ### ep: (float2) the expected profit
+        s_set_t = copy.deepcopy(s_set)
+        union_seed_set = set()
+        for k in range(self.num_product):
+            union_seed_set = union_seed_set | s_set_t[k]
+        ep = 0.0
+
+        for k in range(self.num_product):
+            i_dict = {}
+            for i in s_set_t[k]:
+                if i in self.graph_dict:
+                    for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
+                        if ii not in i_dict:
+                            i_dict[ii] = ['0.1']
+                        elif ii in i_dict:
+                            i_dict[ii].append('0.1')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii in union_seed_set:
+                                continue
+                            if iii not in i_dict:
+                                i_dict[iii] = ['0.01']
+                            elif ii in i_dict:
+                                i_dict[iii].append('0.01')
+
+                    for ii in self.graph_dict[i]:
+                        if ii not in self.graph_dict:
+                            continue
+                        for iii in self.graph_dict[ii]:
+                            if iii not in self.graph_dict:
+                                continue
+                            for iiii in self.graph_dict[ii]:
+                                if iiii in union_seed_set:
+                                    continue
+                                if iiii not in i_dict:
+                                    i_dict[iiii] = ['0.001']
+                                elif iiii in i_dict:
+                                    i_dict[iiii].append('0.001')
+
+            for i in i_dict:
+                acc_prob = 1.0
+                for prob in i_dict[i]:
+                    acc_prob *= (1 - float(prob))
+                ep += ((1 - acc_prob) * self.product_list[k][0] * self.pw_list[k])
+
+        return round(ep, 4)
+
+
 class Evaluation:
     def __init__(self, g_dict, s_c_dict, prod_list, pps, wpiwp):
         ### g_dict: (dict) the graph
