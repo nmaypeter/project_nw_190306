@@ -82,13 +82,13 @@ if __name__ == '__main__':
         cur_budget, cur_profit = 0.0, 0.0
         seed_set_t = [set() for _ in range(num_product)]
 
-        mep = celf_sequence[kk].pop(0)
-        mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+        mep_g = celf_sequence[kk].pop(0)
+        mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
         while cur_budget < total_budget and mep_i_node != '-1':
             if cur_budget + seed_cost_dict[mep_i_node] > total_budget:
-                mep = celf_sequence[kk].pop(0)
-                mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+                mep_g = celf_sequence[kk].pop(0)
+                mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
                 if mep_i_node == '-1':
                     break
                 continue
@@ -121,8 +121,8 @@ if __name__ == '__main__':
                         celf_sequence[kk].pop()
                         break
 
-            mep = celf_sequence[kk].pop(0)
-            mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+            mep_g = celf_sequence[kk].pop(0)
+            mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
     mep_result = [0.0, [set() for _ in range(num_product)]]
     ### bud_index: (list) the using budget index for products
