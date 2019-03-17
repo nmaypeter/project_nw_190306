@@ -33,19 +33,19 @@ class SeedSelectionNGPW:
 
         return product_weight_list
 
-    def generateCelfSequence(self):
+    def generateCelfSequence(self, p_w_list):
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
         celf_seq = [[-1, '-1', 0.0, 0]]
 
-        diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
+        diffpw_ss = DiffusionPW(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte, p_w_list)
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
             ep = 0.0
             for _ in range(self.monte):
-                ep += diff_ss.getSeedSetProfit(s_set)
+                ep += diffpw_ss.getSeedSetProfit(s_set)
             ep = round(ep / self.monte, 4)
             mg = round(ep, 4)
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     now_budget, now_profit = 0.0, 0.0
     seed_set = [set() for _ in range(num_product)]
 
-    celf_sequence = ssngpw.generateCelfSequence()
+    celf_sequence = ssngpw.generateCelfSequence(pw_list)
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
