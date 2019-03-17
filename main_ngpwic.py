@@ -29,13 +29,14 @@ if __name__ == '__main__':
 
                         seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
                         ssngpw_main = SeedSelectionNGPW(graph_dict, seed_cost_dict, product_list, distribution_type, monte_carlo)
-                        diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
+                        pw_list = ssngpw_main.getProductWeight()
+                        diffpw_main = DiffusionPW(graph_dict, seed_cost_dict, product_list, monte_carlo, pw_list)
                         for sample_count in range(sample_number):
                             ss_strat_time = time.time()
                             begin_budget = 1
                             now_budget, now_profit = 0.0, 0.0
                             seed_set = [set() for _ in range(num_product)]
-                            celf_sequence = ssngpw_main.generateCelfSequence()
+                            celf_sequence = ssngpw_main.generateCelfSequence(pw_list)
                             ss_acc_time = round(time.time() - ss_strat_time, 2)
                             temp_sequence = [[begin_budget, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), ss_acc_time]]
                             while len(temp_sequence) != 0:
@@ -64,13 +65,13 @@ if __name__ == '__main__':
                                         seed_set[mep_k_prod].add(mep_i_node)
                                         ep_g = 0.0
                                         for _ in range(monte_carlo):
-                                            ep_g += diff_main.getSeedSetProfit(seed_set)
+                                            ep_g += diffpw_main.getSeedSetProfit(seed_set)
                                         now_profit = round(ep_g / monte_carlo, 4)
                                         now_budget = round(now_budget + sc, 2)
                                     else:
                                         ep_g = 0.0
                                         for _ in range(monte_carlo):
-                                            ep_g += diff_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
+                                            ep_g += diffpw_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
                                         ep_g = round(ep_g / monte_carlo, 4)
                                         mg_g = round(ep_g - now_profit, 4)
                                         ep_flag = seed_set_length
