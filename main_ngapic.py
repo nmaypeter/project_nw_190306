@@ -8,7 +8,7 @@ if __name__ == '__main__':
     sample_number = 10
     total_budget = 10
     pps_seq = [1, 2, 3]
-    monte_carlo, eva_monte_carlo = 10, 100
+    eva_monte_carlo = 100
     for wpiwp in wpiwp_seq:
         for distribution_type in dis_sequence:
             for data_setting in data_setting_seq:
