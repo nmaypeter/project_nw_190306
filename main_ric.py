@@ -39,7 +39,7 @@ if __name__ == '__main__':
                             temp_sequence = [[begin_budget, now_budget, copy.deepcopy(seed_set), copy.deepcopy(nban_set), ss_acc_time]]
                             while len(temp_sequence) != 0:
                                 ss_strat_time = time.time()
-                                begin_budget, now_budget, seed_set, degree_dict, ss_acc_time = temp_sequence.pop(0)
+                                begin_budget, now_budget, seed_set, nban_set, ss_acc_time = temp_sequence.pop(0)
                                 print('@ mric seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                       ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                 mep_g, nban_set = ssr_main.selectRandomSeed(nban_set)
