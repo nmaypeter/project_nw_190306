@@ -8,7 +8,7 @@ if __name__ == '__main__':
     sample_number = 10
     total_budget = 10
     pps_seq = [1, 2, 3]
-    monte_carlo, eva_monte_carlo = 10, 100
+    eva_monte_carlo = 100
     for wpiwp in wpiwp_seq:
         for distribution_type in dis_sequence:
             for data_setting in data_setting_seq:
@@ -62,16 +62,10 @@ if __name__ == '__main__':
                                     seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
                                     if mep_flag == seed_set_length:
                                         seed_set[mep_k_prod].add(mep_i_node)
-                                        ep_g = 0.0
-                                        for _ in range(monte_carlo):
-                                            ep_g += diffap_main.getSeedSetProfit(seed_set)
-                                        now_profit = round(ep_g / monte_carlo, 4)
+                                        now_profit = diffap_main.getSeedSetProfit(seed_set)
                                         now_budget = round(now_budget + sc, 2)
                                     else:
-                                        ep_g = 0.0
-                                        for _ in range(monte_carlo):
-                                            ep_g += diffap_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
-                                        ep_g = round(ep_g / monte_carlo, 4)
+                                        ep_g = diffap_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
                                         mg_g = round(ep_g - now_profit, 4)
                                         if seed_cost_dict[mep_i_node] == 0:
                                             mg_ratio_g = 0
