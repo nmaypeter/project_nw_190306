@@ -356,35 +356,49 @@ class DiffusionAccProb:
                     for ii in self.graph_dict[i]:
                         if ii in union_seed_set:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         if ii not in i_dict:
-                            i_dict[ii] = ['0.1']
+                            i_dict[ii] = [ii_prob]
                         elif ii in i_dict:
-                            i_dict[ii].append('0.1')
+                            i_dict[ii].append(ii_prob)
 
                     for ii in self.graph_dict[i]:
                         if ii not in self.graph_dict:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         for iii in self.graph_dict[ii]:
                             if iii in union_seed_set:
                                 continue
+                            iii_prob = self.graph_dict[ii][iii]
+                            iii_prob = str(float(ii_prob) * float(iii_prob))
                             if iii not in i_dict:
-                                i_dict[iii] = ['0.01']
+                                i_dict[iii] = [iii_prob]
                             elif ii in i_dict:
-                                i_dict[iii].append('0.01')
+                                i_dict[iii].append(iii_prob)
 
                     for ii in self.graph_dict[i]:
                         if ii not in self.graph_dict:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         for iii in self.graph_dict[ii]:
                             if iii not in self.graph_dict:
                                 continue
-                            for iiii in self.graph_dict[ii]:
+                            iii_prob = self.graph_dict[ii][iii]
+                            iii_prob = str(float(ii_prob) * float(iii_prob))
+
+                            for iiii in self.graph_dict[iii]:
                                 if iiii in union_seed_set:
                                     continue
+                                iiii_prob = self.graph_dict[iii][iiii]
+                                iiii_prob = str(float(iii_prob) * float(iiii_prob))
+
                                 if iiii not in i_dict:
-                                    i_dict[iiii] = ['0.001']
+                                    i_dict[iiii] = [iiii_prob]
                                 elif iiii in i_dict:
-                                    i_dict[iiii].append('0.001')
+                                    i_dict[iiii].append(iiii_prob)
 
             for i in i_dict:
                 acc_prob = 1.0
@@ -410,35 +424,47 @@ class DiffusionAccProb:
                     for ii in self.graph_dict[i]:
                         if ii in union_seed_set:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         if ii not in i_dict:
-                            i_dict[ii] = ['0.1']
+                            i_dict[ii] = [ii_prob]
                         elif ii in i_dict:
-                            i_dict[ii].append('0.1')
+                            i_dict[ii].append(ii_prob)
 
                     for ii in self.graph_dict[i]:
                         if ii not in self.graph_dict:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         for iii in self.graph_dict[ii]:
                             if iii in union_seed_set:
                                 continue
+                            iii_prob = str(float(ii_prob) * float(self.graph_dict[ii][iii]))
+
                             if iii not in i_dict:
-                                i_dict[iii] = ['0.01']
+                                i_dict[iii] = [iii_prob]
                             elif ii in i_dict:
-                                i_dict[iii].append('0.01')
+                                i_dict[iii].append(iii_prob)
 
                     for ii in self.graph_dict[i]:
                         if ii not in self.graph_dict:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         for iii in self.graph_dict[ii]:
                             if iii not in self.graph_dict:
                                 continue
-                            for iiii in self.graph_dict[ii]:
+                            iii_prob = str(float(ii_prob) * float(self.graph_dict[ii][iii]))
+
+                            for iiii in self.graph_dict[iii]:
                                 if iiii in union_seed_set:
                                     continue
+                                iiii_prob = str(float(iii_prob) * float(self.graph_dict[iii][iiii]))
+
                                 if iiii not in i_dict:
-                                    i_dict[iiii] = ['0.001']
+                                    i_dict[iiii] = [iiii_prob]
                                 elif iiii in i_dict:
-                                    i_dict[iiii].append('0.001')
+                                    i_dict[iiii].append(iiii_prob)
 
             for i in i_dict:
                 acc_prob = 1.0
