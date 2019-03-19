@@ -17,8 +17,10 @@ for ctl in ctl_seq:
                     product_name = 'r1p3n' + str(prod_setting) + 'a' * (prod_setting2 == 2) + 'b' * (prod_setting2 == 3)
                     for wpiwp in wpiwp_seq:
                         for m in range(1, model_kinds + 1):
-                            model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + '_pps'
-                            if ctl == 1:
+                            model_name = ''
+                            if ctl == 0:
+                                model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + '_pps'
+                            elif ctl == 1:
                                 model_name = 'mngic' * (m == 1) + 'mngric' * (m == 2) + 'mngpwic' * (m == 3) + 'mngrpwic' * (m == 4) + '_pps'
                             elif ctl == 2:
                                 model_name = 'mhdic' * (m == 1) + 'mhedic' * (m == 2) + 'mhdpwic' * (m == 3) + 'mhedpwic' * (m == 4) + '_pps'
