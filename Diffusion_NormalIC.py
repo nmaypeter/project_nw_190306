@@ -356,7 +356,7 @@ class DiffusionAccProb:
                     for ii in self.graph_dict[i]:
                         if ii in union_seed_set:
                             continue
-                        ii_prob = self.graph_dict[i][ii]
+                        ii_prob = str(round(float(self.graph_dict[i][ii]), 4))
 
                         if ii not in i_dict:
                             i_dict[ii] = [ii_prob]
@@ -364,6 +364,8 @@ class DiffusionAccProb:
                             i_dict[ii].append(ii_prob)
 
                     for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
                         if ii not in self.graph_dict:
                             continue
                         ii_prob = self.graph_dict[i][ii]
@@ -372,18 +374,22 @@ class DiffusionAccProb:
                             if iii in union_seed_set:
                                 continue
                             iii_prob = self.graph_dict[ii][iii]
-                            iii_prob = str(float(ii_prob) * float(iii_prob))
+                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
                             if iii not in i_dict:
                                 i_dict[iii] = [iii_prob]
-                            elif ii in i_dict:
+                            elif iii in i_dict:
                                 i_dict[iii].append(iii_prob)
 
                     for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
                         if ii not in self.graph_dict:
                             continue
                         ii_prob = self.graph_dict[i][ii]
 
                         for iii in self.graph_dict[ii]:
+                            if iii in union_seed_set:
+                                continue
                             if iii not in self.graph_dict:
                                 continue
                             iii_prob = self.graph_dict[ii][iii]
@@ -393,7 +399,7 @@ class DiffusionAccProb:
                                 if iiii in union_seed_set:
                                     continue
                                 iiii_prob = self.graph_dict[iii][iiii]
-                                iiii_prob = str(float(iii_prob) * float(iiii_prob))
+                                iiii_prob = str(round(float(iii_prob) * float(iiii_prob), 4))
 
                                 if iiii not in i_dict:
                                     i_dict[iiii] = [iiii_prob]
@@ -405,7 +411,6 @@ class DiffusionAccProb:
                 for prob in i_dict[i]:
                     acc_prob *= (1 - float(prob))
                 ep += ((1 - acc_prob) * self.product_list[k][0])
-
         return round(ep, 4)
 
     def getSeedSetProfit(self, s_set):
@@ -443,7 +448,7 @@ class DiffusionAccProb:
 
                             if iii not in i_dict:
                                 i_dict[iii] = [iii_prob]
-                            elif ii in i_dict:
+                            elif iii in i_dict:
                                 i_dict[iii].append(iii_prob)
 
                     for ii in self.graph_dict[i]:
@@ -473,6 +478,142 @@ class DiffusionAccProb:
                 ep += ((1 - acc_prob) * self.product_list[k][0])
 
         return round(ep, 4)
+
+
+class DiffusionAccProb2:
+    def __init__(self, g_dict, s_c_dict, prod_list):
+        ### g_dict: (dict) the graph
+        ### s_c_dict: (dict) the set of cost for seeds
+        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
+        ### num_node: (int) the number of nodes
+        ### num_product: (int) the kinds of products
+        self.graph_dict = g_dict
+        self.seed_cost_dict = s_c_dict
+        self.product_list = prod_list
+        self.num_node = len(s_c_dict)
+        self.num_product = len(prod_list)
+
+    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_dict):
+        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
+        temp_s_i_dict = [{} for _ in range(self.num_product)]
+        if i_node not in s_set[k_prod]:
+            temp_s_i_dict = copy.deepcopy(s_i_dict)
+            temp_union_seed_set = set()
+            for k in range(self.num_product):
+                temp_union_seed_set = temp_union_seed_set | s_set[k]
+
+            if i_node in s_i_dict[k_prod]:
+                for i_prob in s_i_dict[k_prod][i_node]:
+                    if i_node in temp_s_i_dict[k_prod] and i_prob in temp_s_i_dict[k_prod][i_node]:
+                        temp_s_i_dict[k_prod][i_node].remove(i_prob)
+                    if i_node in self.graph_dict:
+                        for ii in self.graph_dict[i_node]:
+                            if ii in temp_union_seed_set:
+                                continue
+                            ii_prob = self.graph_dict[i_node][ii]
+                            ii_prob = str(round(float(i_prob) * float(ii_prob), 4))
+
+                            if ii in temp_s_i_dict[k_prod] and ii_prob in temp_s_i_dict[k_prod][ii]:
+                                temp_s_i_dict[k_prod][ii].remove(ii_prob)
+
+                        for ii in self.graph_dict[i_node]:
+                            if ii not in self.graph_dict:
+                                continue
+                            ii_prob = self.graph_dict[i_node][ii]
+                            ii_prob = str(float(i_prob) * float(ii_prob))
+
+                            for iii in self.graph_dict[ii]:
+                                if iii in temp_union_seed_set:
+                                    continue
+                                iii_prob = self.graph_dict[ii][iii]
+                                iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
+                                if iii in temp_s_i_dict[k_prod] and iii_prob in temp_s_i_dict[k_prod][iii]:
+                                    temp_s_i_dict[k_prod][iii].remove(iii_prob)
+
+                        for ii in self.graph_dict[i_node]:
+                            if ii not in self.graph_dict:
+                                continue
+                            ii_prob = self.graph_dict[i_node][ii]
+                            ii_prob = str(float(i_prob) * float(ii_prob))
+
+                            for iii in self.graph_dict[ii]:
+                                if iii not in self.graph_dict:
+                                    continue
+                                iii_prob = self.graph_dict[ii][iii]
+                                iii_prob = str(float(ii_prob) * float(iii_prob))
+
+                                for iiii in self.graph_dict[iii]:
+                                    if iiii in temp_union_seed_set:
+                                        continue
+                                    iiii_prob = self.graph_dict[iii][iiii]
+                                    iiii_prob = str(round(float(iii_prob) * float(iiii_prob), 4))
+
+                                    if iiii in temp_s_i_dict[k_prod] and iiii_prob in temp_s_i_dict[k_prod][iiii]:
+                                        temp_s_i_dict[k_prod][iiii].remove(iiii_prob)
+
+        s_set_t = copy.deepcopy(s_set)
+        s_set_t[k_prod].add(i_node)
+        union_seed_set = set()
+        for k in range(self.num_product):
+            union_seed_set = union_seed_set | s_set_t[k]
+        ep = 0.0
+
+        if i_node in self.graph_dict:
+            for ii in self.graph_dict[i_node]:
+                if ii in union_seed_set:
+                    continue
+                ii_prob = str(round(float(self.graph_dict[i_node][ii]), 4))
+
+                if ii not in temp_s_i_dict[k_prod]:
+                    temp_s_i_dict[k_prod][ii] = [ii_prob]
+                elif ii in temp_s_i_dict[k_prod]:
+                    temp_s_i_dict[k_prod][ii].append(ii_prob)
+
+            for ii in self.graph_dict[i_node]:
+                if ii not in self.graph_dict:
+                    continue
+                ii_prob = self.graph_dict[i_node][ii]
+
+                for iii in self.graph_dict[ii]:
+                    if iii in union_seed_set:
+                        continue
+                    iii_prob = self.graph_dict[ii][iii]
+                    iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
+                    if iii not in temp_s_i_dict[k_prod]:
+                        temp_s_i_dict[k_prod][iii] = [iii_prob]
+                    elif iii in temp_s_i_dict[k_prod]:
+                        temp_s_i_dict[k_prod][iii].append(iii_prob)
+
+            for ii in self.graph_dict[i_node]:
+                if ii not in self.graph_dict:
+                    continue
+                ii_prob = self.graph_dict[i_node][ii]
+
+                for iii in self.graph_dict[ii]:
+                    if iii not in self.graph_dict:
+                        continue
+                    iii_prob = self.graph_dict[ii][iii]
+                    iii_prob = str(float(ii_prob) * float(iii_prob))
+
+                    for iiii in self.graph_dict[iii]:
+                        if iiii in union_seed_set:
+                            continue
+                        iiii_prob = self.graph_dict[iii][iiii]
+                        iiii_prob = str(round(float(iii_prob) * float(iiii_prob), 4))
+
+                        if iiii not in temp_s_i_dict[k_prod]:
+                            temp_s_i_dict[k_prod][iiii] = [iiii_prob]
+                        elif iiii in temp_s_i_dict[k_prod]:
+                            temp_s_i_dict[k_prod][iiii].append(iiii_prob)
+
+        for k in range(self.num_product):
+            for i in temp_s_i_dict[k]:
+                acc_prob = 1.0
+                for prob in temp_s_i_dict[k][i]:
+                    acc_prob *= (1 - float(prob))
+                ep += ((1 - acc_prob) * self.product_list[k][0])
+
+        return round(ep, 4), temp_s_i_dict
 
 
 class DiffusionAccProbPW:
@@ -520,7 +661,7 @@ class DiffusionAccProbPW:
                                 continue
                             if iii not in i_dict:
                                 i_dict[iii] = ['0.01']
-                            elif ii in i_dict:
+                            elif iii in i_dict:
                                 i_dict[iii].append('0.01')
 
                     for ii in self.graph_dict[i]:
@@ -574,7 +715,7 @@ class DiffusionAccProbPW:
                                 continue
                             if iii not in i_dict:
                                 i_dict[iii] = ['0.01']
-                            elif ii in i_dict:
+                            elif iii in i_dict:
                                 i_dict[iii].append('0.01')
 
                     for ii in self.graph_dict[i]:
