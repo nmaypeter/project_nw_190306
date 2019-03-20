@@ -2,7 +2,7 @@
 
 price_list = [[0.24, 0.48, 0.72]]
 mu = sum(price_list[pk])
-sigma = abs(min(price_list_g[pk]) - mu_g) / 3
+sigma = abs(min(price_lis[pk]) - mu) / 3
 
 買得起0	0.9987
 買得起1	0.9918
