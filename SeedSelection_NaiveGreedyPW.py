@@ -42,10 +42,9 @@ class SeedSelectionNGPW:
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
-            s_set[0].add(i)
             ep = 0.0
             for _ in range(self.monte):
-                ep += diffpw_ss.getSeedSetProfit(s_set)
+                ep += diffpw_ss.getExpectedProfit(0, i, s_set)
             ep = round(ep / self.monte, 4)
             mg = round(ep, 4)
 
