@@ -31,21 +31,20 @@ class SeedSelectionNGR:
             ep = round(ep / self.monte, 4)
             mg = round(ep, 4)
 
-            if mg <= 0:
-                continue
-            for k in range(self.num_product):
-                mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
-                if self.seed_cost_dict[i] == 0:
-                    break
-                else:
-                    mg_ratio = round(mg / self.seed_cost_dict[i], 4)
-                celf_ep = [k, i, mg_ratio, 0]
-                celf_seq.append(celf_ep)
-                for celf_item in celf_seq:
-                    if celf_ep[2] >= celf_item[2]:
-                        celf_seq.insert(celf_seq.index(celf_item), celf_ep)
-                        celf_seq.pop()
+            if mg > 0:
+                for k in range(self.num_product):
+                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    if self.seed_cost_dict[i] == 0:
                         break
+                    else:
+                        mg_ratio = round(mg / self.seed_cost_dict[i], 4)
+                    celf_ep = [k, i, mg_ratio, 0]
+                    celf_seq.append(celf_ep)
+                    for celf_item in celf_seq:
+                        if celf_ep[2] >= celf_item[2]:
+                            celf_seq.insert(celf_seq.index(celf_item), celf_ep)
+                            celf_seq.pop()
+                            break
 
         return celf_seq
 
