@@ -86,15 +86,14 @@ if __name__ == '__main__':
                                             mep_mg = round(ep1_g - cur_profit, 4)
                                             mep_flag = seed_set_length
 
-                                            if mep_mg <= 0:
-                                                continue
-                                            celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
-                                            celf_sequence[kk].append(celf_ep_g)
-                                            for celf_item_g in celf_sequence[kk]:
-                                                if celf_ep_g[2] >= celf_item_g[2]:
-                                                    celf_sequence[kk].insert(celf_sequence[kk].index(celf_item_g), celf_ep_g)
-                                                    celf_sequence[kk].pop()
-                                                    break
+                                            if mep_mg > 0:
+                                                celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
+                                                celf_sequence[kk].append(celf_ep_g)
+                                                for celf_item_g in celf_sequence[kk]:
+                                                    if celf_ep_g[2] >= celf_item_g[2]:
+                                                        celf_sequence[kk].insert(celf_sequence[kk].index(celf_item_g), celf_ep_g)
+                                                        celf_sequence[kk].pop()
+                                                        break
 
                                         mep = celf_sequence[kk].pop(0)
                                         mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
