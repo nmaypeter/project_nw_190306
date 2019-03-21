@@ -5,7 +5,7 @@ if __name__ == '__main__':
     dis_sequence = [1, 2]
     data_setting_seq = [1]
     prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
-    sample_number = 10
+    sample_number = 1
     total_budget = 10
     pps_seq = [1, 2, 3]
     eva_monte_carlo = 100
@@ -73,15 +73,14 @@ if __name__ == '__main__':
                                             mg_ratio_g = round(mg_g / seed_cost_dict[mep_i_node], 4)
                                         ep_flag = seed_set_length
 
-                                        if mg_ratio_g <= 0:
-                                            continue
-                                        celf_ep_g = [mep_k_prod, mep_i_node, mg_ratio_g, ep_flag]
-                                        celf_sequence.append(celf_ep_g)
-                                        for celf_item_g in celf_sequence:
-                                            if celf_ep_g[2] >= celf_item_g[2]:
-                                                celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
-                                                celf_sequence.pop()
-                                                break
+                                        if mg_ratio_g > 0:
+                                            celf_ep_g = [mep_k_prod, mep_i_node, mg_ratio_g, ep_flag]
+                                            celf_sequence.append(celf_ep_g)
+                                            for celf_item_g in celf_sequence:
+                                                if celf_ep_g[2] >= celf_item_g[2]:
+                                                    celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
+                                                    celf_sequence.pop()
+                                                    break
 
                                     mep_g = celf_sequence.pop(0)
                                     mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
