@@ -202,21 +202,19 @@ if __name__ == '__main__':
             seed_set[mep_k_prod].add(mep_i_node)
             now_profit = diffap.getSeedSetProfit(seed_set)
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
-            print(round(time.time() - start_time, 2), now_profit, now_budget, seed_set)
         else:
             ep_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
             mg_g = round(ep_g - now_profit, 4)
             ep_flag = seed_set_length
 
-            if mg_g <= 0:
-                continue
-            celf_ep_g = [mep_k_prod, mep_i_node, mg_g, ep_flag]
-            celf_sequence.append(celf_ep_g)
-            for celf_item_g in celf_sequence:
-                if celf_ep_g[2] >= celf_item_g[2]:
-                    celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
-                    celf_sequence.pop()
-                    break
+            if mg_g > 0:
+                celf_ep_g = [mep_k_prod, mep_i_node, mg_g, ep_flag]
+                celf_sequence.append(celf_ep_g)
+                for celf_item_g in celf_sequence:
+                    if celf_ep_g[2] >= celf_item_g[2]:
+                        celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
+                        celf_sequence.pop()
+                        break
 
         mep_g = celf_sequence.pop(0)
         mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
