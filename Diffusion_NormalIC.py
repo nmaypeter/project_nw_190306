@@ -462,7 +462,7 @@ class DiffusionAccProb:
                                     i_dict[iiii] = [iiii_prob]
                                 elif iiii in i_dict:
                                     i_dict[iiii].append(iiii_prob)
-            # print(i_dict)
+
             for i in i_dict:
                 acc_prob = 1.0
                 for prob in i_dict[i]:
@@ -589,8 +589,10 @@ class DiffusionAccProb2:
         return round(ep, 4), temp_s_i_dict
 
 
+
+
 class DiffusionAccProbPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, p_w_list):
+    def __init__(self, g_dict, s_c_dict, prod_list, pw_list):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
@@ -602,7 +604,7 @@ class DiffusionAccProbPW:
         self.product_list = prod_list
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
-        self.pw_list = p_w_list
+        self.pw_list = pw_list
 
     def getExpectedProfit(self, k_prod, i_node, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
@@ -621,42 +623,61 @@ class DiffusionAccProbPW:
                     for ii in self.graph_dict[i]:
                         if ii in union_seed_set:
                             continue
+                        ii_prob = str(round(float(self.graph_dict[i][ii]), 4))
+
                         if ii not in i_dict:
-                            i_dict[ii] = ['0.1']
+                            i_dict[ii] = [ii_prob]
                         elif ii in i_dict:
-                            i_dict[ii].append('0.1')
+                            i_dict[ii].append(ii_prob)
 
                     for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
                         if ii not in self.graph_dict:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         for iii in self.graph_dict[ii]:
                             if iii in union_seed_set:
                                 continue
+                            iii_prob = self.graph_dict[ii][iii]
+                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
                             if iii not in i_dict:
-                                i_dict[iii] = ['0.01']
+                                i_dict[iii] = [iii_prob]
                             elif iii in i_dict:
-                                i_dict[iii].append('0.01')
+                                i_dict[iii].append(iii_prob)
 
                     for ii in self.graph_dict[i]:
+                        if ii in union_seed_set:
+                            continue
                         if ii not in self.graph_dict:
                             continue
+                        ii_prob = self.graph_dict[i][ii]
+
                         for iii in self.graph_dict[ii]:
+                            if iii in union_seed_set:
+                                continue
                             if iii not in self.graph_dict:
                                 continue
-                            for iiii in self.graph_dict[ii]:
+                            iii_prob = self.graph_dict[ii][iii]
+                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
+
+                            for iiii in self.graph_dict[iii]:
                                 if iiii in union_seed_set:
                                     continue
+                                iiii_prob = self.graph_dict[iii][iiii]
+                                iiii_prob = str(round(float(iii_prob) * float(iiii_prob), 4))
+
                                 if iiii not in i_dict:
-                                    i_dict[iiii] = ['0.001']
+                                    i_dict[iiii] = [iiii_prob]
                                 elif iiii in i_dict:
-                                    i_dict[iiii].append('0.001')
+                                    i_dict[iiii].append(iiii_prob)
 
             for i in i_dict:
                 acc_prob = 1.0
                 for prob in i_dict[i]:
                     acc_prob *= (1 - float(prob))
                 ep += ((1 - acc_prob) * self.product_list[k][0] * self.pw_list[k])
-
         return round(ep, 4)
 
     def getSeedSetProfit(self, s_set):
@@ -675,35 +696,39 @@ class DiffusionAccProbPW:
                     for ii in self.graph_dict[i]:
                         if ii in union_seed_set:
                             continue
-                        if ii not in i_dict:
-                            i_dict[ii] = ['0.1']
-                        elif ii in i_dict:
-                            i_dict[ii].append('0.1')
+                        ii_prob = self.graph_dict[i][ii]
 
-                    for ii in self.graph_dict[i]:
+                        if ii not in i_dict:
+                            i_dict[ii] = [ii_prob]
+                        elif ii in i_dict:
+                            i_dict[ii].append(ii_prob)
+
                         if ii not in self.graph_dict:
                             continue
+
                         for iii in self.graph_dict[ii]:
                             if iii in union_seed_set:
                                 continue
-                            if iii not in i_dict:
-                                i_dict[iii] = ['0.01']
-                            elif iii in i_dict:
-                                i_dict[iii].append('0.01')
+                            iii_prob = str(round(float(ii_prob) * float(self.graph_dict[ii][iii]), 4))
 
-                    for ii in self.graph_dict[i]:
-                        if ii not in self.graph_dict:
-                            continue
-                        for iii in self.graph_dict[ii]:
+                            if iii not in i_dict:
+                                i_dict[iii] = [iii_prob]
+                            elif iii in i_dict:
+                                i_dict[iii].append(iii_prob)
+
                             if iii not in self.graph_dict:
                                 continue
-                            for iiii in self.graph_dict[ii]:
+                            iii_prob = str(round(float(ii_prob) * float(self.graph_dict[ii][iii]), 4))
+
+                            for iiii in self.graph_dict[iii]:
                                 if iiii in union_seed_set:
                                     continue
+                                iiii_prob = str(round(float(iii_prob) * float(self.graph_dict[iii][iiii]), 4))
+
                                 if iiii not in i_dict:
-                                    i_dict[iiii] = ['0.001']
+                                    i_dict[iiii] = [iiii_prob]
                                 elif iiii in i_dict:
-                                    i_dict[iiii].append('0.001')
+                                    i_dict[iiii].append(iiii_prob)
 
             for i in i_dict:
                 acc_prob = 1.0
