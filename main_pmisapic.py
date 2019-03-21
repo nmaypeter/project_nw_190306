@@ -51,7 +51,7 @@ if __name__ == '__main__':
                                           ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
 
                                     seed_set_t = copy.deepcopy(s_matrix[kk][-1])
-                                    mep = celf_sequence[kk].pop(0)
+                                    mep = celf_sequence.pop(0)
                                     mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
 
                                     while cur_budget < begin_budget and mep_i_node != '-1':
@@ -62,7 +62,7 @@ if __name__ == '__main__':
                                                                   copy.deepcopy(s_matrix), copy.deepcopy(c_matrix), ss_time])
 
                                         if cur_budget + sc > begin_budget:
-                                            mep = celf_sequence[kk].pop(0)
+                                            mep = celf_sequence.pop(0)
                                             mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
                                             if mep_i_node == '-1':
                                                 break
@@ -88,14 +88,14 @@ if __name__ == '__main__':
 
                                             if mep_mg > 0:
                                                 celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
-                                                celf_sequence[kk].append(celf_ep_g)
-                                                for celf_item_g in celf_sequence[kk]:
+                                                celf_sequence.append(celf_ep_g)
+                                                for celf_item_g in celf_sequence:
                                                     if celf_ep_g[2] >= celf_item_g[2]:
-                                                        celf_sequence[kk].insert(celf_sequence[kk].index(celf_item_g), celf_ep_g)
-                                                        celf_sequence[kk].pop()
+                                                        celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
+                                                        celf_sequence.pop()
                                                         break
 
-                                        mep = celf_sequence[kk].pop(0)
+                                        mep = celf_sequence.pop(0)
                                         mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
 
                                     s_matrix_sequence[begin_budget - 1][kk] = s_matrix[kk]
