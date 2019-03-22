@@ -51,7 +51,9 @@ if __name__ == '__main__':
                                     sc = seed_cost_dict[mep_i_node]
                                     if now_budget + sc >= begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
                                         ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
-                                        temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), ss_time])
+                                        temp_celf_sequence = copy.deepcopy(celf_sequence)
+                                        temp_celf_sequence.insert(0, mep_g)
+                                        temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(temp_celf_sequence), ss_time])
 
                                     if now_budget + sc > begin_budget:
                                         mep_g = celf_sequence.pop(0)
