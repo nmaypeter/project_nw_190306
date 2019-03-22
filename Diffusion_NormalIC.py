@@ -363,12 +363,8 @@ class DiffusionAccProb:
                         elif ii in i_dict:
                             i_dict[ii].append(ii_prob)
 
-                    for ii in self.graph_dict[i]:
-                        if ii in union_seed_set:
-                            continue
                         if ii not in self.graph_dict:
                             continue
-                        ii_prob = self.graph_dict[i][ii]
 
                         for iii in self.graph_dict[ii]:
                             if iii in union_seed_set:
@@ -380,20 +376,8 @@ class DiffusionAccProb:
                             elif iii in i_dict:
                                 i_dict[iii].append(iii_prob)
 
-                    for ii in self.graph_dict[i]:
-                        if ii in union_seed_set:
-                            continue
-                        if ii not in self.graph_dict:
-                            continue
-                        ii_prob = self.graph_dict[i][ii]
-
-                        for iii in self.graph_dict[ii]:
-                            if iii in union_seed_set:
-                                continue
                             if iii not in self.graph_dict:
                                 continue
-                            iii_prob = self.graph_dict[ii][iii]
-                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
 
                             for iiii in self.graph_dict[iii]:
                                 if iiii in union_seed_set:
