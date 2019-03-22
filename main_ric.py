@@ -49,7 +49,9 @@ if __name__ == '__main__':
                                     sc = seed_cost_dict[mep_i_node]
                                     if now_budget + sc >= begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
                                         ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
-                                        temp_sequence.append([begin_budget + 1, now_budget, copy.deepcopy(seed_set), copy.deepcopy(nban_set), ss_time])
+                                        temp_nban_set = copy.deepcopy(nban_set)
+                                        temp_nban_set[mep_k_prod].add(mep_i_node)
+                                        temp_sequence.append([begin_budget + 1, now_budget, copy.deepcopy(seed_set), copy.deepcopy(temp_nban_set), ss_time])
 
                                     if now_budget + sc > begin_budget:
                                         mep_g, nban_set = ssr_main.selectRandomSeed(nban_set)
