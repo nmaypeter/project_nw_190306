@@ -53,9 +53,9 @@ if __name__ == '__main__':
                                         temp_deg = iniG.getNodeOutDegree(mep_i_node)
                                         temp_degree_dict = copy.deepcopy(degree_dict)
                                         if temp_deg in temp_degree_dict:
-                                            temp_degree_dict[temp_deg].add((mep_k_prod, mep_i_node))
+                                            temp_degree_dict[str(temp_deg)].add((mep_k_prod, mep_i_node))
                                         else:
-                                            temp_degree_dict[temp_deg] = {(mep_k_prod, mep_i_node)}
+                                            temp_degree_dict[str(temp_deg)] = {(mep_k_prod, mep_i_node)}
                                         temp_sequence.append([begin_budget + 1, now_budget, copy.deepcopy(seed_set), copy.deepcopy(temp_degree_dict), ss_time])
 
                                     if now_budget + sc > begin_budget:
