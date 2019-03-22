@@ -8,7 +8,7 @@ if __name__ == '__main__':
     sample_number = 1
     total_budget = 10
     pps_seq = [1, 2, 3]
-    monte_carlo, eva_monte_carlo = 10, 100
+    eva_monte_carlo = 100
     for wpiwp in wpiwp_seq:
         for distribution_type in dis_sequence:
             for data_setting in data_setting_seq:
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                                     ss_strat_time = time.time()
                                     begin_budget, cur_budget, cur_profit, celf_sequence, s_matrix, c_matrix, ss_acc_time = temp_sequence.pop(0)
                                     print('@ mpmisapic seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
-                                          ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
+                                          ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count) + str(kk))
 
                                     seed_set_t = copy.deepcopy(s_matrix[kk][-1])
                                     mep = celf_sequence.pop(0)
@@ -58,7 +58,9 @@ if __name__ == '__main__':
                                         sc = seed_cost_dict[mep_i_node]
                                         if cur_budget + sc >= begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
                                             ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
-                                            temp_sequence.append([begin_budget + 1, cur_budget, cur_profit, copy.deepcopy(celf_sequence),
+                                            temp_celf_sequence = copy.deepcopy(celf_sequence)
+                                            temp_celf_sequence.insert(0, mep)
+                                            temp_sequence.append([begin_budget + 1, cur_budget, cur_profit, copy.deepcopy(temp_celf_sequence),
                                                                   copy.deepcopy(s_matrix), copy.deepcopy(c_matrix), ss_time])
 
                                         if cur_budget + sc > begin_budget:
@@ -71,18 +73,12 @@ if __name__ == '__main__':
                                         seed_set_length = sum(len(seed_set_t[k]) for k in range(num_product))
                                         if mep_flag == seed_set_length:
                                             seed_set_t[mep_k_prod].add(mep_i_node)
-                                            ep_g = 0.0
-                                            for _ in range(monte_carlo):
-                                                ep_g += diffap_main.getSeedSetProfit(seed_set_t)
-                                            cur_profit = round(ep_g / monte_carlo, 4)
+                                            cur_profit = diffap_main.getSeedSetProfit(seed_set_t)
                                             cur_budget = round(cur_budget + sc, 2)
                                             s_matrix[kk].append(copy.deepcopy(seed_set_t))
                                             c_matrix[kk].append(round(cur_budget, 2))
                                         else:
-                                            ep1_g = 0.0
-                                            for _ in range(monte_carlo):
-                                                ep1_g += diffap_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set_t)
-                                            ep1_g = round(ep1_g / monte_carlo, 4)
+                                            ep1_g = diffap_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set_t)
                                             mep_mg = round(ep1_g - cur_profit, 4)
                                             mep_flag = seed_set_length
 
@@ -123,10 +119,7 @@ if __name__ == '__main__':
                                         for kk in range(num_product):
                                             seed_set[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
 
-                                        pro_acc = 0.0
-                                        for _ in range(monte_carlo):
-                                            pro_acc += diffap_main.getSeedSetProfit(seed_set)
-                                        pro_acc = round(pro_acc / monte_carlo, 4)
+                                        pro_acc = diffap_main.getSeedSetProfit(seed_set)
 
                                         if pro_acc > mep_result[0]:
                                             mep_result = [pro_acc, seed_set]
