@@ -64,7 +64,7 @@ class SeedSelectionPMISAP:
     def generateCelfSequence(self):
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
-        celf_seq = [[-1, '-1', 0.0, 0]]
+        celf_seq = [[[-1, '-1', 0.0, 0]] for _ in range(self.num_product)]
 
         diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
@@ -78,11 +78,11 @@ class SeedSelectionPMISAP:
             for k in range(self.num_product):
                 mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
                 celf_ep = [k, i, mg, 0]
-                celf_seq.append(celf_ep)
-                for celf_item in celf_seq:
+                celf_seq[k].append(celf_ep)
+                for celf_item in celf_seq[k]:
                     if celf_ep[2] >= celf_item[2]:
-                        celf_seq.insert(celf_seq.index(celf_item), celf_ep)
-                        celf_seq.pop()
+                        celf_seq[k].insert(celf_seq[k].index(celf_item), celf_ep)
+                        celf_seq[k].pop()
                         break
 
         return celf_seq
