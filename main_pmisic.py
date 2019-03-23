@@ -48,7 +48,7 @@ if __name__ == '__main__':
                                     ss_strat_time = time.time()
                                     begin_budget, cur_budget, cur_profit, celf_sequence, s_matrix, c_matrix, ss_acc_time = temp_sequence.pop(0)
                                     print('@ mpmisic seed selection @ data_set_name = ' + data_set_name + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
-                                          ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
+                                          ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count) + str(kk))
 
                                     seed_set_t = copy.deepcopy(s_matrix[kk][-1])
                                     mep = celf_sequence[kk].pop(0)
