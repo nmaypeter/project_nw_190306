@@ -2,7 +2,7 @@ import os
 
 data_setting_seq = [1]
 # model is optional
-model_seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+model_seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 pps_seq = [1, 2, 3]
 wpiwp_seq = [bool(0), bool(1)]
 prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
@@ -14,7 +14,8 @@ for data_setting in data_setting_seq:
     for m in model_seq:
         model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + \
                      'mngric' * (m == 5) + 'mngpwic' * (m == 6) + 'mngrpwic' * (m == 7) + \
-                     'mhedic' * (m == 8) + 'mhdpwic' * (m == 9) + 'mhedpwic' * (m == 10) + '_pps'
+                     'mhedic' * (m == 8) + 'mhdpwic' * (m == 9) + 'mhedpwic' * (m == 10) + \
+                     'mngapic' * (m == 11) + 'mngapric' * (m == 12) + 'mngappwic' * (m == 13) + 'mngaprpwic' * (m == 14) + 'mpmisapic' * (m == 15) + '_pps'
         profit, cost, time_avg, time_total = [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))], [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))], [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))], [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))]
         ratio_profit, ratio_cost, number_an, number_seed = [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))], [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))], [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))], [[[] for _ in range(len(pps_seq))] for _ in range(len(dis_seq))]
         for dis in dis_seq:
