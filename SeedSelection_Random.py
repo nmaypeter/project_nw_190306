@@ -1,4 +1,4 @@
-from Diffusion_NormalIC import *
+from Diffusion import *
 
 
 class SeedSelectionR:
@@ -14,27 +14,29 @@ class SeedSelectionR:
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
 
-    def selectRandomSeed(self, nb_set):
-        # -- select a seed for a random product randomly
-        ### product_num: (list) record the product number with possible seeds
-        product_num = [k for k in range(self.num_product)]
-        mep = [-1, '-1']
-        while mep[0] == -1:
-            mep[0] = choice(product_num)
-            if len(nb_set[mep[0]]) == 0:
-                product_num.remove(mep[0])
-                mep[0] = -1
-            if len(product_num) == 0:
-                return mep, nb_set
-        mep[1] = choice(list(nb_set[mep[0]]))
-        nb_set[mep[0]].remove(mep[1])
+    def constructRandomNodeSet(self):
+        rn_set = set()
+        for k in range(self.num_product):
+            for i in self.graph_dict:
+                rn_set.add((k, i))
 
-        return mep, nb_set
+        return rn_set
+
+    @staticmethod
+    def selectRandomSeed(rn_set):
+        # -- select a seed for a random product randomly --
+        mep = (-1, '-1')
+        if len(rn_set) != 0:
+            mep = choice(list(rn_set))
+            rn_set.remove(mep)
+
+        return mep, rn_set
 
 
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
+    cascade_model = 'ic'
     total_budget = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
@@ -45,7 +47,7 @@ if __name__ == '__main__':
     iniP = IniProduct(product_name)
 
     seed_cost_dict = iniG.constructSeedCostDict()
-    graph_dict = iniG.constructGraphDict()
+    graph_dict = iniG.constructGraphDict(cascade_model)
     product_list = iniP.getProductList()
     num_node = len(seed_cost_dict)
     num_product = len(product_list)
@@ -58,14 +60,14 @@ if __name__ == '__main__':
     now_budget = 0.0
     seed_set = [set() for _ in range(num_product)]
 
-    nban_set = [{ii for ii in graph_dict} for _ in range(num_product)]
-    mep_g, nban_set = ssr.selectRandomSeed(nban_set)
+    random_node_set = ssr.constructRandomNodeSet()
+    mep_g, random_node_set = ssr.selectRandomSeed(random_node_set)
     mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     # -- main --
     while now_budget < total_budget and mep_i_node != '-1':
         if now_budget + seed_cost_dict[mep_i_node] > total_budget:
-            mep_g, nban_set = ssr.selectRandomSeed(nban_set)
+            mep_g, random_node_set = ssr.selectRandomSeed(random_node_set)
             mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
             if mep_i_node == '-1':
                 break
@@ -73,9 +75,10 @@ if __name__ == '__main__':
         seed_set[mep_k_prod].add(mep_i_node)
         now_budget += seed_cost_dict[mep_i_node]
 
-        mep_g, nban_set = ssr.selectRandomSeed(nban_set)
+        mep_g, nban_set = ssr.selectRandomSeed(random_node_set)
         mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
+    print('seed selection time: ' + str(round(time.time() - start_time, 2)) + 'sec')
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
     wallet_list = iniW.getWalletList()
