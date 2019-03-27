@@ -1,4 +1,4 @@
-from Diffusion_NormalIC import *
+from Diffusion import *
 
 
 class SeedSelectionHD:
@@ -58,9 +58,9 @@ class SeedSelectionHD:
         return d_dict
 
     @staticmethod
-    def getHighDegreeNode(d_dict):
+    def selectHighDegreeSeed(d_dict):
         # -- get the node with highest degree --
-        mep = [-1, '-1']
+        mep = (-1, '-1')
         max_degree = -1
         while mep[1] == '-1':
             while max_degree == -1:
@@ -82,7 +82,6 @@ class SeedSelectionHD:
 
             mep = choice(list(d_dict[str(max_degree)]))
             d_dict[str(max_degree)].remove(mep)
-            mep = list(mep)
 
         return mep, d_dict
 
@@ -90,6 +89,7 @@ class SeedSelectionHD:
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
+    cascade_model = 'wc'
     total_budget = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     iniP = IniProduct(product_name)
 
     seed_cost_dict = iniG.constructSeedCostDict()
-    graph_dict = iniG.constructGraphDict()
+    graph_dict = iniG.constructGraphDict(cascade_model)
     product_list = iniP.getProductList()
     num_node = len(seed_cost_dict)
     num_product = len(product_list)
@@ -114,13 +114,13 @@ if __name__ == '__main__':
     seed_set = [set() for _ in range(num_product)]
 
     degree_dict = sshd.constructDegreeDict(data_set_name)
-    mep_g, degree_dict = sshd.getHighDegreeNode(degree_dict)
+    mep_g, degree_dict = sshd.selectHighDegreeSeed(degree_dict)
     mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     # -- main --
     while now_budget < total_budget and mep_i_node != '-1':
         if now_budget + seed_cost_dict[mep_i_node] > total_budget:
-            mep_g, degree_dict = sshd.getHighDegreeNode(degree_dict)
+            mep_g, degree_dict = sshd.selectHighDegreeSeed(degree_dict)
             mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
             if mep_i_node == '-1':
                 break
@@ -129,9 +129,10 @@ if __name__ == '__main__':
         seed_set[mep_k_prod].add(mep_i_node)
         now_budget += seed_cost_dict[mep_i_node]
 
-        mep_g, degree_dict = sshd.getHighDegreeNode(degree_dict)
+        mep_g, degree_dict = sshd.selectHighDegreeSeed(degree_dict)
         mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
+    print('seed selection time: ' + str(round(time.time() - start_time, 2)) + 'sec')
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
     wallet_list = iniW.getWalletList()
@@ -155,6 +156,8 @@ if __name__ == '__main__':
         for sample_seed in seed_set[kk]:
             sample_bud_acc += seed_cost_dict[sample_seed]
             sample_bud_k_acc[kk] += seed_cost_dict[sample_seed]
+            sample_bud_acc = round(sample_bud_acc, 2)
+            sample_bud_k_acc[kk] = round(sample_bud_k_acc[kk], 2)
 
     print('seed set: ' + str(seed_set))
     print('profit: ' + str(sample_pro_acc))
