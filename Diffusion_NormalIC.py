@@ -2,6 +2,22 @@ from Initialization import *
 import copy
 
 
+def getProductWeight(prod_list, dis):
+    price_list = [k[2] for k in prod_list]
+    mu, sigma = 0, 1
+    if dis == 1:
+        mu = np.mean(price_list)
+        sigma = (max(price_list) - mu) / 0.8415
+    elif dis == 2:
+        mu = sum(price_list)
+        sigma = abs(min(price_list) - mu) / 3
+    X = np.arange(0, 2, 0.001)
+    Y = stats.norm.sf(X, mu, sigma)
+    pw_list = [round(float(Y[np.argwhere(X == p)]), 4) for p in price_list]
+
+    return pw_list
+
+
 class Diffusion:
     def __init__(self, g_dict, s_c_dict, prod_list, monte):
         ### g_dict: (dict) the graph
@@ -16,156 +32,6 @@ class Diffusion:
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.monte = monte
-
-    def getExpectedProfit(self, k_prod, i_node, s_set):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        s_set_t[k_prod].add(i_node)
-        a_n_set = copy.deepcopy(s_set_t)
-        a_e_set = [{} for _ in range(self.num_product)]
-        ep = 0.0
-
-        # -- notice: prevent the node from owing no receiver --
-        if i_node not in self.graph_dict:
-            return round(ep, 4)
-
-        # -- insert the children of seeds into try_s_n_sequence --
-        ### try_s_n_sequence: (list) the sequence to store the seed for k-products [k, i]
-        ### try_a_n_sequence: (list) the sequence to store the nodes may be activated for k-products [k, i, prob]
-        try_s_n_sequence, try_a_n_sequence = [], []
-        for k in range(self.num_product):
-            for i in s_set_t[k]:
-                try_s_n_sequence.append([k, i])
-
-        while len(try_s_n_sequence) > 0:
-            seed = choice(try_s_n_sequence)
-            try_s_n_sequence.remove(seed)
-            k_prod_t, i_node_t = seed[0], seed[1]
-
-            out_dict = self.graph_dict[i_node_t]
-            for out in out_dict:
-                if random.random() > float(out_dict[out]):
-                    continue
-
-                if out in a_n_set[k_prod_t]:
-                    continue
-                if i_node in a_e_set[k_prod_t] and out in a_e_set[k_prod_t][i_node]:
-                    continue
-                try_a_n_sequence.append([k_prod_t, out, float(out_dict[out])])
-                a_n_set[k_prod_t].add(i_node_t)
-                if i_node_t in a_e_set[k_prod_t]:
-                    a_e_set[k_prod_t][i_node_t].add(out)
-                else:
-                    a_e_set[k_prod_t][i_node_t] = {out}
-
-        while len(try_a_n_sequence) > 0:
-            try_node = choice(try_a_n_sequence)
-            try_a_n_sequence.remove(try_node)
-            k_prod_t, i_node_t, acc_prob = try_node[0], try_node[1], try_node[2]
-
-            ### -- purchasing --
-            ep += self.product_list[k_prod_t][0]
-
-            # -- notice: prevent the node from owing no receiver --
-            if i_node_t not in self.graph_dict:
-                continue
-
-            if acc_prob > 0.0001:
-                continue
-
-            out_dict = self.graph_dict[i_node_t]
-            for out in out_dict:
-                if random.random() > float(out_dict[out]):
-                    continue
-
-                if out in a_n_set[k_prod_t]:
-                    continue
-                if i_node in a_e_set[k_prod_t] and out in a_e_set[k_prod_t][i_node]:
-                    continue
-                try_a_n_sequence.append([k_prod_t, out, acc_prob * float(out_dict[out])])
-                a_n_set[k_prod_t].add(i_node_t)
-                if i_node_t in a_e_set[k_prod_t]:
-                    a_e_set[k_prod_t][i_node_t].add(out)
-                else:
-                    a_e_set[k_prod_t][i_node_t] = {out}
-
-        return round(ep, 4)
-
-    def getExpectedRemovedProfit(self, k_prod, i_node, s_set):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        s_set_t[k_prod].remove(i_node)
-        a_n_set = copy.deepcopy(s_set_t)
-        a_e_set = [{} for _ in range(self.num_product)]
-        ep = 0.0
-
-        # -- notice: prevent the node from owing no receiver --
-        if i_node not in self.graph_dict:
-            return round(ep, 4)
-
-        # -- insert the children of seeds into try_s_n_sequence --
-        ### try_s_n_sequence: (list) the sequence to store the seed for k-products [k, i]
-        ### try_a_n_sequence: (list) the sequence to store the nodes may be activated for k-products [k, i, prob]
-        try_s_n_sequence, try_a_n_sequence = [], []
-        for k in range(self.num_product):
-            for i in s_set_t[k]:
-                try_s_n_sequence.append([k, i])
-
-        while len(try_s_n_sequence) > 0:
-            seed = choice(try_s_n_sequence)
-            try_s_n_sequence.remove(seed)
-            k_prod_t, i_node_t = seed[0], seed[1]
-
-            out_dict = self.graph_dict[i_node_t]
-            for out in out_dict:
-                if random.random() > float(out_dict[out]):
-                    continue
-
-                if out in a_n_set[k_prod_t]:
-                    continue
-                if i_node in a_e_set[k_prod_t] and out in a_e_set[k_prod_t][i_node]:
-                    continue
-                try_a_n_sequence.append([k_prod_t, out, float(out_dict[out])])
-                a_n_set[k_prod_t].add(i_node_t)
-                if i_node_t in a_e_set[k_prod_t]:
-                    a_e_set[k_prod_t][i_node_t].add(out)
-                else:
-                    a_e_set[k_prod_t][i_node_t] = {out}
-
-        while len(try_a_n_sequence) > 0:
-            try_node = choice(try_a_n_sequence)
-            try_a_n_sequence.remove(try_node)
-            k_prod_t, i_node_t, acc_prob = try_node[0], try_node[1], try_node[2]
-
-            ### -- purchasing --
-            ep += self.product_list[k_prod_t][0]
-
-            # -- notice: prevent the node from owing no receiver --
-            if i_node_t not in self.graph_dict:
-                continue
-
-            if acc_prob > 0.0001:
-                continue
-
-            out_dict = self.graph_dict[i_node_t]
-            for out in out_dict:
-                if random.random() > float(out_dict[out]):
-                    continue
-
-                if out in a_n_set[k_prod_t]:
-                    continue
-                if i_node in a_e_set[k_prod_t] and out in a_e_set[k_prod_t][i_node]:
-                    continue
-                try_a_n_sequence.append([k_prod_t, out, acc_prob * float(out_dict[out])])
-                a_n_set[k_prod_t].add(i_node_t)
-                if i_node_t in a_e_set[k_prod_t]:
-                    a_e_set[k_prod_t][i_node_t].add(out)
-                else:
-                    a_e_set[k_prod_t][i_node_t] = {out}
-
-        return round(ep, 4)
 
     def getSeedSetProfit(self, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
@@ -239,96 +105,21 @@ class Diffusion:
 
 
 class DiffusionPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, monte, p_w_list):
+    def __init__(self, g_dict, s_c_dict, prod_list, pw_list, monte):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
-        ### monte: (int) monte carlo times
         ### p_w_list: (list) the product weight list
+        ### monte: (int) monte carlo times
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
+        self.pw_list = pw_list
         self.monte = monte
-        self.pw_list = p_w_list
-
-    def getExpectedProfit(self, k_prod, i_node, s_set):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        s_set_t[k_prod].add(i_node)
-        a_n_set = copy.deepcopy(s_set_t)
-        a_e_set = [{} for _ in range(self.num_product)]
-        ep = 0.0
-
-        # -- notice: prevent the node from owing no receiver --
-        if i_node not in self.graph_dict:
-            return round(ep, 4)
-
-        # -- insert the children of seeds into try_s_n_sequence --
-        ### try_s_n_sequence: (list) the sequence to store the seed for k-products [k, i]
-        ### try_a_n_sequence: (list) the sequence to store the nodes may be activated for k-products [k, i, prob]
-        try_s_n_sequence, try_a_n_sequence = [], []
-        for k in range(self.num_product):
-            for i in s_set_t[k]:
-                try_s_n_sequence.append([k, i])
-
-        while len(try_s_n_sequence) > 0:
-            seed = choice(try_s_n_sequence)
-            try_s_n_sequence.remove(seed)
-            k_prod_t, i_node_t = seed[0], seed[1]
-
-            out_dict = self.graph_dict[i_node_t]
-            for out in out_dict:
-                if random.random() > float(out_dict[out]):
-                    continue
-
-                if out in a_n_set[k_prod_t]:
-                    continue
-                if i_node in a_e_set[k_prod_t] and out in a_e_set[k_prod_t][i_node]:
-                    continue
-                try_a_n_sequence.append([k_prod_t, out, float(out_dict[out])])
-                a_n_set[k_prod_t].add(i_node_t)
-                if i_node_t in a_e_set[k_prod_t]:
-                    a_e_set[k_prod_t][i_node_t].add(out)
-                else:
-                    a_e_set[k_prod_t][i_node_t] = {out}
-
-        while len(try_a_n_sequence) > 0:
-            try_node = choice(try_a_n_sequence)
-            try_a_n_sequence.remove(try_node)
-            k_prod_t, i_node_t, acc_prob = try_node[0], try_node[1], try_node[2]
-
-            ### -- purchasing --
-            ep += self.product_list[k_prod_t][0] * self.pw_list[k_prod_t]
-
-            # -- notice: prevent the node from owing no receiver --
-            if i_node_t not in self.graph_dict:
-                continue
-
-            if acc_prob > 0.0001:
-                continue
-
-            out_dict = self.graph_dict[i_node_t]
-            for out in out_dict:
-                if random.random() > float(out_dict[out]):
-                    continue
-
-                if out in a_n_set[k_prod_t]:
-                    continue
-                if i_node in a_e_set[k_prod_t] and out in a_e_set[k_prod_t][i_node]:
-                    continue
-                try_a_n_sequence.append([k_prod_t, out, acc_prob * float(out_dict[out])])
-                a_n_set[k_prod_t].add(i_node_t)
-                if i_node_t in a_e_set[k_prod_t]:
-                    a_e_set[k_prod_t][i_node_t].add(out)
-                else:
-                    a_e_set[k_prod_t][i_node_t] = {out}
-
-        return round(ep, 4)
 
     def getSeedSetProfit(self, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
@@ -413,64 +204,6 @@ class DiffusionAccProb:
         self.product_list = prod_list
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
-
-    def getExpectedProfit(self, k_prod, i_node, s_set):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        s_set_t[k_prod].add(i_node)
-        union_seed_set = set()
-        for k in range(self.num_product):
-            union_seed_set = union_seed_set | s_set_t[k]
-        ep = 0.0
-
-        for k in range(self.num_product):
-            i_dict = {}
-            for i in s_set_t[k]:
-                if i in self.graph_dict:
-                    for ii in self.graph_dict[i]:
-                        if ii in union_seed_set:
-                            continue
-                        ii_prob = str(round(float(self.graph_dict[i][ii]), 4))
-
-                        if ii not in i_dict:
-                            i_dict[ii] = [ii_prob]
-                        elif ii in i_dict:
-                            i_dict[ii].append(ii_prob)
-
-                        if ii not in self.graph_dict:
-                            continue
-
-                        for iii in self.graph_dict[ii]:
-                            if iii in union_seed_set:
-                                continue
-                            iii_prob = self.graph_dict[ii][iii]
-                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
-                            if iii not in i_dict:
-                                i_dict[iii] = [iii_prob]
-                            elif iii in i_dict:
-                                i_dict[iii].append(iii_prob)
-
-                            if iii not in self.graph_dict:
-                                continue
-
-                            for iiii in self.graph_dict[iii]:
-                                if iiii in union_seed_set:
-                                    continue
-                                iiii_prob = self.graph_dict[iii][iiii]
-                                iiii_prob = str(round(float(iii_prob) * float(iiii_prob), 4))
-
-                                if iiii not in i_dict:
-                                    i_dict[iiii] = [iiii_prob]
-                                elif iiii in i_dict:
-                                    i_dict[iiii].append(iiii_prob)
-
-            for i in i_dict:
-                acc_prob = 1.0
-                for prob in i_dict[i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0])
-        return round(ep, 4)
 
     def getSeedSetProfit(self, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
@@ -648,8 +381,6 @@ class DiffusionAccProb2:
         return round(ep, 4), temp_s_i_dict
 
 
-
-
 class DiffusionAccProbPW:
     def __init__(self, g_dict, s_c_dict, prod_list, pw_list):
         ### g_dict: (dict) the graph
@@ -664,80 +395,6 @@ class DiffusionAccProbPW:
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.pw_list = pw_list
-
-    def getExpectedProfit(self, k_prod, i_node, s_set):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        s_set_t[k_prod].add(i_node)
-        union_seed_set = set()
-        for k in range(self.num_product):
-            union_seed_set = union_seed_set | s_set_t[k]
-        ep = 0.0
-
-        for k in range(self.num_product):
-            i_dict = {}
-            for i in s_set_t[k]:
-                if i in self.graph_dict:
-                    for ii in self.graph_dict[i]:
-                        if ii in union_seed_set:
-                            continue
-                        ii_prob = str(round(float(self.graph_dict[i][ii]), 4))
-
-                        if ii not in i_dict:
-                            i_dict[ii] = [ii_prob]
-                        elif ii in i_dict:
-                            i_dict[ii].append(ii_prob)
-
-                    for ii in self.graph_dict[i]:
-                        if ii in union_seed_set:
-                            continue
-                        if ii not in self.graph_dict:
-                            continue
-                        ii_prob = self.graph_dict[i][ii]
-
-                        for iii in self.graph_dict[ii]:
-                            if iii in union_seed_set:
-                                continue
-                            iii_prob = self.graph_dict[ii][iii]
-                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
-                            if iii not in i_dict:
-                                i_dict[iii] = [iii_prob]
-                            elif iii in i_dict:
-                                i_dict[iii].append(iii_prob)
-
-                    for ii in self.graph_dict[i]:
-                        if ii in union_seed_set:
-                            continue
-                        if ii not in self.graph_dict:
-                            continue
-                        ii_prob = self.graph_dict[i][ii]
-
-                        for iii in self.graph_dict[ii]:
-                            if iii in union_seed_set:
-                                continue
-                            if iii not in self.graph_dict:
-                                continue
-                            iii_prob = self.graph_dict[ii][iii]
-                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
-
-                            for iiii in self.graph_dict[iii]:
-                                if iiii in union_seed_set:
-                                    continue
-                                iiii_prob = self.graph_dict[iii][iiii]
-                                iiii_prob = str(round(float(iii_prob) * float(iiii_prob), 4))
-
-                                if iiii not in i_dict:
-                                    i_dict[iiii] = [iiii_prob]
-                                elif iiii in i_dict:
-                                    i_dict[iiii].append(iiii_prob)
-
-            for i in i_dict:
-                acc_prob = 1.0
-                for prob in i_dict[i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0] * self.pw_list[k])
-        return round(ep, 4)
 
     def getSeedSetProfit(self, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
