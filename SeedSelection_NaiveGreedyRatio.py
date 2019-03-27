@@ -1,4 +1,4 @@
-from Diffusion_NormalIC import *
+from Diffusion import *
 
 
 class SeedSelectionNGR:
@@ -16,20 +16,22 @@ class SeedSelectionNGR:
         self.num_product = len(prod_list)
         self.monte = monte
 
-    def generateCelfSequence(self):
+    def generateCelfSequenceR(self):
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
-        celf_seq = [[-1, '-1', 0.0, 0]]
+        celf_seq = [(-1, '-1', 0.0, 0)]
 
         diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
+            s_set[0].add(i)
             ep = 0.0
             for _ in range(self.monte):
-                ep += diff_ss.getExpectedProfit(0, i, s_set)
+                ep += diff_ss.getSeedSetProfit(s_set)
             ep = round(ep / self.monte, 4)
             mg = round(ep, 4)
+            del s_set
 
             if mg > 0:
                 for k in range(self.num_product):
@@ -52,6 +54,7 @@ class SeedSelectionNGR:
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
+    cascade_model = 'ic'
     total_budget = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
@@ -62,7 +65,7 @@ if __name__ == '__main__':
     iniP = IniProduct(product_name)
 
     seed_cost_dict = iniG.constructSeedCostDict()
-    graph_dict = iniG.constructGraphDict()
+    graph_dict = iniG.constructGraphDict(cascade_model)
     product_list = iniP.getProductList()
     num_node = len(seed_cost_dict)
     num_product = len(product_list)
@@ -76,7 +79,7 @@ if __name__ == '__main__':
     now_budget, now_profit = 0.0, 0.0
     seed_set = [set() for _ in range(num_product)]
 
-    celf_sequence = ssngr.generateCelfSequence()
+    celf_sequence = ssngr.generateCelfSequenceR()
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
@@ -97,9 +100,11 @@ if __name__ == '__main__':
             now_profit = round(ep_g / monte_carlo, 4)
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
         else:
+            seed_set_t = copy.deepcopy(seed_set)
+            seed_set_t[mep_k_prod].add(mep_i_node)
             ep_g = 0.0
             for _ in range(monte_carlo):
-                ep_g += diff.getExpectedProfit(mep_k_prod, mep_i_node, seed_set)
+                ep_g += diff.getSeedSetProfit(seed_set_t)
             ep_g = round(ep_g / monte_carlo, 4)
             mg_g = round(ep_g - now_profit, 4)
             if seed_cost_dict[mep_i_node] == 0:
@@ -107,20 +112,21 @@ if __name__ == '__main__':
             else:
                 mg_ratio_g = round(mg_g / seed_cost_dict[mep_i_node], 4)
             ep_flag = seed_set_length
+            del seed_set_t
 
-            if mg_ratio_g <= 0:
-                continue
-            celf_ep_g = [mep_k_prod, mep_i_node, mg_ratio_g, ep_flag]
-            celf_sequence.append(celf_ep_g)
-            for celf_item_g in celf_sequence:
-                if celf_ep_g[2] >= celf_item_g[2]:
-                    celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
-                    celf_sequence.pop()
-                    break
+            if mg_ratio_g > 0:
+                celf_ep_g = (mep_k_prod, mep_i_node, mg_ratio_g, ep_flag)
+                celf_sequence.append(celf_ep_g)
+                for celf_item_g in celf_sequence:
+                    if celf_ep_g[2] >= celf_item_g[2]:
+                        celf_sequence.insert(celf_sequence.index(celf_item_g), celf_ep_g)
+                        celf_sequence.pop()
+                        break
 
         mep_g = celf_sequence.pop(0)
         mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
+    print('seed selection time: ' + str(round(time.time() - start_time, 2)) + 'sec')
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
     wallet_list = iniW.getWalletList()
