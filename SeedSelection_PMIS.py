@@ -1,4 +1,4 @@
-from Diffusion_NormalIC import *
+from Diffusion import *
 import operator
 
 
@@ -26,23 +26,24 @@ class SeedSelectionPMIS:
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
+            s_set[0].add(i)
             ep = 0.0
             for _ in range(self.monte):
-                ep += diff_ss.getExpectedProfit(0, i, s_set)
+                ep += diff_ss.getSeedSetProfit(s_set)
             ep = round(ep / self.monte, 4)
             mg = round(ep, 4)
+            del s_set
 
-            if mg <= 0:
-                continue
-            for k in range(self.num_product):
-                mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
-                celf_ep = [k, i, mg, 0]
-                celf_seq[k].append(celf_ep)
-                for celf_item in celf_seq[k]:
-                    if celf_ep[2] >= celf_item[2]:
-                        celf_seq[k].insert(celf_seq[k].index(celf_item), celf_ep)
-                        celf_seq[k].pop()
-                        break
+            if mg > 0:
+                for k in range(self.num_product):
+                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    celf_ep = [k, i, mg, 0]
+                    celf_seq[k].append(celf_ep)
+                    for celf_item in celf_seq[k]:
+                        if celf_ep[2] >= celf_item[2]:
+                            celf_seq[k].insert(celf_seq[k].index(celf_item), celf_ep)
+                            celf_seq[k].pop()
+                            break
 
         return celf_seq
 
@@ -69,20 +70,21 @@ class SeedSelectionPMISAP:
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
-            ep = diffap_ss.getExpectedProfit(0, i, s_set)
+            s_set[0].add(i)
+            ep = diffap_ss.getSeedSetProfit(s_set)
             mg = round(ep, 4)
+            del s_set
 
-            if mg <= 0:
-                continue
-            for k in range(self.num_product):
-                mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
-                celf_ep = [k, i, mg, 0]
-                celf_seq[k].append(celf_ep)
-                for celf_item in celf_seq[k]:
-                    if celf_ep[2] >= celf_item[2]:
-                        celf_seq[k].insert(celf_seq[k].index(celf_item), celf_ep)
-                        celf_seq[k].pop()
-                        break
+            if mg > 0:
+                for k in range(self.num_product):
+                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    celf_ep = [k, i, mg, 0]
+                    celf_seq[k].append(celf_ep)
+                    for celf_item in celf_seq[k]:
+                        if celf_ep[2] >= celf_item[2]:
+                            celf_seq[k].insert(celf_seq[k].index(celf_item), celf_ep)
+                            celf_seq[k].pop()
+                            break
 
         return celf_seq
 
@@ -90,6 +92,7 @@ class SeedSelectionPMISAP:
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
+    cascade_model = 'ic'
     total_budget = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
@@ -100,7 +103,7 @@ if __name__ == '__main__':
     iniP = IniProduct(product_name)
 
     seed_cost_dict = iniG.constructSeedCostDict()
-    graph_dict = iniG.constructGraphDict()
+    graph_dict = iniG.constructGraphDict(cascade_model)
     product_list = iniP.getProductList()
     num_node = len(seed_cost_dict)
     num_product = len(product_list)
@@ -119,7 +122,7 @@ if __name__ == '__main__':
         c_matrix[kk].append(0.0)
 
         cur_budget, cur_profit = 0.0, 0.0
-        seed_set_t = [set() for _ in range(num_product)]
+        seed_set_pmis = [set() for _ in range(num_product)]
 
         mep_g = celf_sequence[kk].pop(0)
         mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
@@ -132,23 +135,26 @@ if __name__ == '__main__':
                     break
                 continue
 
-            seed_set_length = sum(len(seed_set_t[k]) for k in range(num_product))
+            seed_set_length = sum(len(seed_set_pmis[k]) for k in range(num_product))
             if mep_flag == seed_set_length:
+                seed_set_pmis[mep_k_prod].add(mep_i_node)
+                ep_g = 0.0
+                for _ in range(monte_carlo):
+                    ep_g += diff.getSeedSetProfit(seed_set_pmis)
+                cur_profit = round(ep_g / monte_carlo, 4)
+                cur_budget = round(cur_budget + seed_cost_dict[mep_i_node], 2)
+                s_matrix[kk].append(copy.deepcopy(seed_set_pmis))
+                c_matrix[kk].append(round(cur_budget, 2))
+            else:
+                seed_set_t = copy.deepcopy(seed_set_pmis)
                 seed_set_t[mep_k_prod].add(mep_i_node)
                 ep_g = 0.0
                 for _ in range(monte_carlo):
                     ep_g += diff.getSeedSetProfit(seed_set_t)
-                cur_profit = round(ep_g / monte_carlo, 4)
-                cur_budget = round(cur_budget + seed_cost_dict[mep_i_node], 2)
-                s_matrix[kk].append(copy.deepcopy(seed_set_t))
-                c_matrix[kk].append(round(cur_budget, 2))
-            else:
-                ep1_g = 0.0
-                for _ in range(monte_carlo):
-                    ep1_g += diff.getExpectedProfit(mep_k_prod, mep_i_node, seed_set_t)
-                ep1_g = round(ep1_g / monte_carlo, 4)
-                mep_mg = round(ep1_g - cur_profit, 4)
+                ep_g = round(ep_g / monte_carlo, 4)
+                mep_mg = round(ep_g - cur_profit, 4)
                 mep_flag = seed_set_length
+                del seed_set_t
 
                 if mep_mg > 0:
                     celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
@@ -197,6 +203,7 @@ if __name__ == '__main__':
         bud_index[pointer] -= 1
     seed_set = mep_result[1]
 
+    print('seed selection time: ' + str(round(time.time() - start_time, 2)) + 'sec')
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
     wallet_list = iniW.getWalletList()
