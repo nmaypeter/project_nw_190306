@@ -9,36 +9,36 @@ class IniGraph:
         ### data_set_name, data_data_path, data_weight_path, data_degree_path: (str)
         self.data_name = data_name
         self.data_data_path = 'data/' + data_name + '/data.txt'
-        self.data_weight_path = 'data/' + data_name + '/weight.txt'
+        self.data_ic_weight_path = 'data/' + data_name + '/weight_ic.txt'
+        self.data_wc_weight_path = 'data/' + data_name + '/weight_wc.txt'
         self.data_degree_path = 'data/' + data_name + '/degree.txt'
 
     def setEdgeWeight(self):
         #  -- set weight on edge --
-        fw = open(self.data_weight_path, 'w')
-        with open(self.data_data_path) as f:
-            for line in f:
-                (key, val) = line.split()
-                # --- output: first node, second node, weight on the edge within nodes ---
-                fw.write(key + '\t' + val + '\t' + '0.1\n')
-        fw.close()
-        f.close()
-
-    def outputNodeOutDegree(self):
-        #  -- count the out-degree --
-        ### num_node: (int) the number of nodes in data
-        fw = open(self.data_degree_path, 'w')
         with open(self.data_data_path) as f:
             num_node = 0
-            out_degree_list = []
+            out_degree_list, in_degree_list = [], []
             for line in f:
                 (node1, node2) = line.split()
                 num_node = max(num_node, int(node1), int(node2))
                 out_degree_list.append(node1)
+                in_degree_list.append(node2)
+        f.close()
 
+        fw = open(self.data_degree_path, 'w')
         for i in range(0, num_node + 1):
             fw.write(str(i) + '\t' + str(out_degree_list.count(str(i))) + '\n')
         fw.close()
-        f.close()
+
+        fw_ic = open(self.data_ic_weight_path, 'w')
+        fw_wc = open(self.data_wc_weight_path, 'w')
+        with open(self.data_data_path) as f:
+            for line in f:
+                (node1, node2) = line.split()
+                fw_ic.write(node1 + '\t' + node2 + '\t0.1\n')
+                fw_wc.write(node1 + '\t' + node2 + '\t' + str(round(1 / in_degree_list.count(node2), 2)) + '\n')
+        fw_ic.close()
+        fw_wc.close()
 
     def getNodeOutDegree(self, i_node):
         #  -- get the out-degree --
@@ -75,13 +75,18 @@ class IniGraph:
 
         return s_cost_dict
 
-    def constructGraphDict(self):
+    def constructGraphDict(self, cas):
         # -- build graph --
         ### graph: (dict) the graph
         ### graph[node1]: (dict) the set of node1's receivers
         ### graph[node1][node2]: (str) the weight one the edge of node1 to node2
+        path = ''
+        if cas == 'ic':
+            path = self.data_ic_weight_path
+        elif cas == 'wc':
+            path = self.data_wc_weight_path
         graph = {}
-        with open(self.data_weight_path) as f:
+        with open(path) as f:
             for line in f:
                 (node1, node2, wei) = line.split()
                 if node1 in graph:
@@ -107,7 +112,7 @@ class IniGraph:
     def getTotalNumEdge(self):
         # -- get the num_edge --
         num_edge = 0
-        with open(self.data_weight_path) as f:
+        with open(self.data_data_path) as f:
             for _ in f:
                 num_edge += 1
         f.close()
@@ -273,27 +278,27 @@ if __name__ == '__main__':
     start_time = time.time()
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
-    distribution_type = 2
+    cascade_model = 'ic'
+    distribution_type = 1
 
     iniG = IniGraph(data_set_name)
     iniP = IniProduct(product_name)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
 
-    # iniG.setEdgeWeight()
-    # iniG.outputNodeOutDegree()
-    number_node = iniG.getTotalNumNode()
+    iniG.setEdgeWeight()
+    # number_node = iniG.getTotalNumNode()
     # number_edge = iniG.getTotalNumEdge()
     # max_degree = iniG.getMaxDegree()
 
     # iniP.setProductListWithSRRandMFP()
     # sum_price = iniP.getTotalPrice()
-    iniW.setNodeWallet(number_node)
+    # iniW.setNodeWallet(number_node)
 
     # seed_cost_dict = iniG.constructSeedCostDict()
-    # graph_dict = iniG.constructGraphDict()
+    # graph_dict = iniG.constructGraphDict(cascade_model)
     # product_list = iniP.getProductList()
     # wallet_list = iniW.getWalletList()
-    total_wallet = iniW.getTotalWallet()
+    # total_wallet = iniW.getTotalWallet()
 
     how_long = round(time.time() - start_time, 4)
     print('total time: ' + str(how_long) + 'sec')
