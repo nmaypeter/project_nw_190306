@@ -17,8 +17,6 @@ for ctl in ctl_seq:
                     for prod_setting2 in prod_setting2_seq:
                         product_name = 'r1p3n' + str(prod_setting) + 'a' * (prod_setting2 == 2) + 'b' * (prod_setting2 == 3)
                         for wpiwp in wpiwp_seq:
-                            if ctl == 3:
-                                model_kinds = 5
                             for m in range(1, model_kinds + 1):
                                 model_name = ''
                                 if ctl == 0:
@@ -28,7 +26,7 @@ for ctl in ctl_seq:
                                 elif ctl == 2:
                                     model_name = 'mhdic' * (m == 1) + 'mhedic' * (m == 2) + 'mhdpwic' * (m == 3) + 'mhedpwic' * (m == 4) + '_pps'
                                 elif ctl == 3:
-                                    model_name = 'mngapic' * (m == 1) + 'mngapric' * (m == 2) + 'mngappwic' * (m == 3) + 'mngaprpwic' * (m == 4) + 'mpmisapic' * (m == 5) + '_pps'
+                                    model_name = 'mngapic' * (m == 1) + 'mngapric' * (m == 2) + 'mngappwic' * (m == 3) + 'mngaprpwic' * (m == 4) + '_pps'
 
                                 try:
                                     result_name = 'result/r_' + data_set_name + '/' + model_name + str(pps) + '_dis' + str(dis) + '_wpiwp' * wpiwp \
