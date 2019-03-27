@@ -1,37 +1,22 @@
-from Diffusion_NormalIC import *
+from Diffusion import *
 
 
 class SeedSelectionHDPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, dis):
+    def __init__(self, g_dict, s_c_dict, prod_list, pw_list):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
         ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
         ### num_node: (int) the number of nodes
         ### num_product: (int) the kinds of products
-        ### dis: (int) wallet distribution
+        ### pw_list: (list) the product weight list
         self.graph_dict = g_dict
         self.seed_cost_dict = s_c_dict
         self.product_list = prod_list
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
-        self.dis = dis
+        self.pw_list = pw_list
 
-    def getProductWeight(self):
-        price_list = [k[2] for k in self.product_list]
-        mu, sigma = 0, 1
-        if self.dis == 1:
-            mu = np.mean(price_list)
-            sigma = (max(price_list) - mu) / 0.8415
-        elif self.dis == 2:
-            mu = sum(price_list)
-            sigma = abs(min(price_list) - mu) / 3
-        X = np.arange(0, 2, 0.001)
-        Y = stats.norm.sf(X, mu, sigma)
-        product_weight_list = [round(float(Y[np.argwhere(X == p)]), 4) for p in price_list]
-
-        return product_weight_list
-
-    def constructDegreeDict(self, data_name, p_w_list):
+    def constructDegreeDict(self, data_name):
         # -- display the degree and the nodes with the degree --
         ### d_dict: (dict) the degree and the nodes with the degree
         ### d_dict[deg]: (set) the set for deg-degree nodes
@@ -42,7 +27,7 @@ class SeedSelectionHDPW:
                 if deg == '0':
                     continue
                 for k in range(self.num_product):
-                    deg = str(round(float(deg) * p_w_list[k]))
+                    deg = str(round(float(deg) * self.pw_list[k]))
                     if deg in d_dict:
                         d_dict[deg].add((k, i))
                     else:
@@ -51,7 +36,7 @@ class SeedSelectionHDPW:
 
         return d_dict
 
-    def constructExpendDegreeDict(self, p_w_list):
+    def constructExpendDegreeDict(self):
         # -- display the degree and the nodes with the degree --
         ### d_dict: (dict) the degree and the nodes with the degree
         ### d_dict[deg]: (set) the set for deg-degree nodes
@@ -67,7 +52,7 @@ class SeedSelectionHDPW:
                         i_set.add(i_neighbor_neighbor)
 
             for k in range(self.num_product):
-                deg = str(round(len(i_set) * p_w_list[k]))
+                deg = str(round(len(i_set) * self.pw_list[k]))
                 if deg in d_dict:
                     d_dict[deg].add((k, i))
                 else:
@@ -76,7 +61,7 @@ class SeedSelectionHDPW:
         return d_dict
 
     @staticmethod
-    def getHighDegreeNode(d_dict):
+    def selectHighDegreeSeed(d_dict):
         # -- get the node with highest degree --
         mep = [-1, '-1']
         max_degree = -1
@@ -108,6 +93,7 @@ class SeedSelectionHDPW:
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
+    cascade_model = 'ic'
     total_budget = 10
     distribution_type = 1
     whether_passing_information_without_purchasing = bool(0)
@@ -118,28 +104,28 @@ if __name__ == '__main__':
     iniP = IniProduct(product_name)
 
     seed_cost_dict = iniG.constructSeedCostDict()
-    graph_dict = iniG.constructGraphDict()
+    graph_dict = iniG.constructGraphDict(cascade_model)
     product_list = iniP.getProductList()
     num_node = len(seed_cost_dict)
     num_product = len(product_list)
+    product_weight_list = getProductWeight(product_list, distribution_type)
 
     # -- initialization for each budget --
     start_time = time.time()
-    sshdpw = SeedSelectionHDPW(graph_dict, seed_cost_dict, product_list, distribution_type)
-    pw_list = sshdpw.getProductWeight()
+    sshdpw = SeedSelectionHDPW(graph_dict, seed_cost_dict, product_list, product_weight_list)
 
     # -- initialization for each sample_number --
     now_budget = 0.0
     seed_set = [set() for _ in range(num_product)]
 
-    degree_dict = sshdpw.constructDegreeDict(data_set_name, pw_list)
-    mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict)
+    degree_dict = sshdpw.constructDegreeDict(data_set_name)
+    mep_g, degree_dict = sshdpw.selectHighDegreeSeed(degree_dict)
     mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
     # -- main --
     while now_budget < total_budget and mep_i_node != '-1':
         if now_budget + seed_cost_dict[mep_i_node] > total_budget:
-            mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict)
+            mep_g, degree_dict = sshdpw.selectHighDegreeSeed(degree_dict)
             mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
             if mep_i_node == '-1':
                 break
@@ -147,9 +133,10 @@ if __name__ == '__main__':
         seed_set[mep_k_prod].add(mep_i_node)
         now_budget += seed_cost_dict[mep_i_node]
 
-        mep_g, degree_dict = sshdpw.getHighDegreeNode(degree_dict)
+        mep_g, degree_dict = sshdpw.selectHighDegreeSeed(degree_dict)
         mep_k_prod, mep_i_node = mep_g[0], mep_g[1]
 
+    print('seed selection time: ' + str(round(time.time() - start_time, 2)) + 'sec')
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
     wallet_list = iniW.getWalletList()
@@ -173,6 +160,8 @@ if __name__ == '__main__':
         for sample_seed in seed_set[kk]:
             sample_bud_acc += seed_cost_dict[sample_seed]
             sample_bud_k_acc[kk] += seed_cost_dict[sample_seed]
+            sample_bud_acc = round(sample_bud_acc, 2)
+            sample_bud_k_acc[kk] = round(sample_bud_k_acc[kk], 2)
 
     print('seed set: ' + str(seed_set))
     print('profit: ' + str(sample_pro_acc))
