@@ -73,6 +73,7 @@ if __name__ == '__main__':
     celf_sequence, seed_dict_dict = ssngap.generateCelfSequence()
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_flag, mep_s_i_dict = mep_g[0], mep_g[1], mep_g[3], mep_g[4]
+    print(round(time.time() - start_time, 4))
 
     while now_budget < total_budget and mep_i_node != '-1':
         if now_budget + seed_cost_dict[mep_i_node] > total_budget:
@@ -82,12 +83,13 @@ if __name__ == '__main__':
                 break
             continue
 
+        print(round(time.time() - start_time, 4), mep_g[:4])
         seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
         if mep_flag == seed_set_length:
             now_profit, now_s_i_dict = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_dict, seed_dict_dict[mep_i_node])
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
             seed_set[mep_k_prod].add(mep_i_node)
-            print(now_budget, now_profit, seed_set)
+            print(round(time.time() - start_time, 4), now_budget, now_profit, seed_set)
         else:
             ep_g, s_i_dict_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_dict, seed_dict_dict[mep_i_node])
             mg_g = round(ep_g - now_profit, 4)
