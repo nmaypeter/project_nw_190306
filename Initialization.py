@@ -1,4 +1,4 @@
-from generateDiffusion import *
+from generateDistribution import *
 import random
 import os.path
 import time
