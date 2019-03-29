@@ -44,9 +44,10 @@ class SeedSelectionHD:
                 if i_neighbor not in i_set:
                     i_set.add(i_neighbor)
             for i_neighbor in self.graph_dict[i]:
-                for i_neighbor_neighbor in self.graph_dict[i_neighbor]:
-                    if i_neighbor_neighbor not in i_set:
-                        i_set.add(i_neighbor_neighbor)
+                if i_neighbor in self.graph_dict:
+                    for i_neighbor_neighbor in self.graph_dict[i_neighbor]:
+                        if i_neighbor_neighbor not in i_set:
+                            i_set.add(i_neighbor_neighbor)
 
             deg = str(len(i_set))
             for k in range(self.num_product):
