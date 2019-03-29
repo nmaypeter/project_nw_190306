@@ -10,3 +10,8 @@
 
 3/20
 1. 嘗試寫AccProb系列。
+
+3/27
+1. 加入wc model。
+2. 將getProductWeight移至Diffusion_NormalIC。
+3. 各Diffusion只保留getSeedSetProfit。
