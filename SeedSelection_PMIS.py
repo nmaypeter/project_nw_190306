@@ -20,7 +20,7 @@ class SeedSelectionPMIS:
     def generateCelfSequence(self):
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
-        celf_seq = [[[-1, '-1', 0.0, 0]] for _ in range(self.num_product)]
+        celf_seq = [[(-1, '-1', 0.0, 0)] for _ in range(self.num_product)]
 
         diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
 
@@ -37,7 +37,7 @@ class SeedSelectionPMIS:
             if mg > 0:
                 for k in range(self.num_product):
                     mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
-                    celf_ep = [k, i, mg, 0]
+                    celf_ep = (k, i, mg, 0)
                     celf_seq[k].append(celf_ep)
                     for celf_item in celf_seq[k]:
                         if celf_ep[2] >= celf_item[2]:
@@ -64,7 +64,7 @@ class SeedSelectionPMISAP:
     def generateCelfSequence(self):
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
-        celf_seq = [[[-1, '-1', 0.0, 0]] for _ in range(self.num_product)]
+        celf_seq = [[(-1, '-1', 0.0, 0)] for _ in range(self.num_product)]
 
         diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
@@ -78,7 +78,7 @@ class SeedSelectionPMISAP:
             if mg > 0:
                 for k in range(self.num_product):
                     mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
-                    celf_ep = [k, i, mg, 0]
+                    celf_ep = (k, i, mg, 0)
                     celf_seq[k].append(celf_ep)
                     for celf_item in celf_seq[k]:
                         if celf_ep[2] >= celf_item[2]:
@@ -157,7 +157,7 @@ if __name__ == '__main__':
                 del seed_set_t
 
                 if mep_mg > 0:
-                    celf_ep_g = [mep_k_prod, mep_i_node, mep_mg, mep_flag]
+                    celf_ep_g = (mep_k_prod, mep_i_node, mep_mg, mep_flag)
                     celf_sequence[kk].append(celf_ep_g)
                     for celf_item_g in celf_sequence[kk]:
                         if celf_ep_g[2] >= celf_item_g[2]:
