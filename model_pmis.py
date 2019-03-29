@@ -36,39 +36,43 @@ if __name__ == '__main__':
                             for sample_count in range(sample_number):
                                 s_matrix_sequence = [[[] for _ in range(num_product)] for _ in range(total_budget)]
                                 c_matrix_sequence = [[[] for _ in range(num_product)] for _ in range(total_budget)]
-                                ss_k_time_sequence = [[[] for _ in range(num_product)] for _ in range(total_budget)]
-                                for kk in range(num_product):
+                                ss_k_time_sequence = [0.0 for _ in range(total_budget)]
+                                temp_sequence = [1, [0.0 for _ in range(num_product)], [0.0 for _ in range(num_product)], [[[set() for _ in range(num_product)]] for _ in range(num_product)],
+                                                 [[0.0] for _ in range(num_product)], sspmis_main.generateCelfSequence()]
+                                while temp_sequence[0] <= total_budget:
                                     ss_strat_time = time.time()
-                                    begin_budget = 1
-                                    cur_budget, cur_profit = 0.0, 0.0
-                                    celf_sequence = sspmis_main.generateCelfSequence()
-                                    s_matrix, c_matrix = [[] for _ in range(num_product)], [[] for _ in range(num_product)]
-                                    s_matrix[kk].append([set() for _ in range(num_product)])
-                                    c_matrix[kk].append(0.0)
-                                    ss_acc_time = round(time.time() - ss_strat_time, 2)
-                                    temp_sequence = [[begin_budget, cur_budget, cur_profit, copy.deepcopy(celf_sequence), copy.deepcopy(s_matrix), copy.deepcopy(c_matrix), ss_acc_time]]
-                                    while len(temp_sequence) != 0:
-                                        ss_strat_time = time.time()
-                                        begin_budget, cur_budget, cur_profit, celf_sequence, s_matrix, c_matrix, ss_acc_time = temp_sequence.pop(0)
+                                    begin_budget = temp_sequence[0]
+                                    cur_budget_sequence, cur_profit_sequence = temp_sequence[1], temp_sequence[2]
+                                    s_matrix_seq, c_matrix_seq = copy.deepcopy(temp_sequence[3]), copy.deepcopy(temp_sequence[4])
+                                    celf_sequence = copy.deepcopy(temp_sequence[5])
+
+                                    for kk in range(num_product):
                                         print('@ mpmisic seed selection @ data_set_name = ' + data_set_name + '_' + cas_model + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                               ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count) + str(kk))
+                                        s_matrix = copy.deepcopy(s_matrix_seq[kk])
+                                        c_matrix = copy.deepcopy(c_matrix_seq[kk])
 
-                                        seed_set_pmis = copy.deepcopy(s_matrix[kk][-1])
+                                        cur_budget, cur_profit = cur_budget_sequence[kk], cur_profit_sequence[kk]
+                                        seed_set_pmis = copy.deepcopy(s_matrix[-1])
+
                                         mep = celf_sequence[kk].pop(0)
-                                        mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+                                        mep_k_prod, mep_i_node, mep_mg, mep_flag = mep
 
                                         while cur_budget < begin_budget and mep_i_node != '-1':
                                             sc = seed_cost_dict[mep_i_node]
-                                            if cur_budget + sc >= begin_budget and begin_budget < total_budget and len(temp_sequence) == 0:
-                                                ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
-                                                temp_celf_sequence = copy.deepcopy(celf_sequence)
-                                                temp_celf_sequence[kk].insert(0, mep)
-                                                temp_sequence.append([begin_budget + 1, cur_budget, cur_profit, copy.deepcopy(temp_celf_sequence),
-                                                                      copy.deepcopy(s_matrix), copy.deepcopy(c_matrix), ss_time])
+                                            if cur_budget + sc >= begin_budget:
+                                                temp_sequence[0] = begin_budget + 1
+                                                temp_sequence[1][kk] = cur_budget
+                                                temp_sequence[2][kk] = cur_profit
+                                                temp_sequence[3][kk] = copy.deepcopy(s_matrix)
+                                                temp_sequence[4][kk] = copy.deepcopy(c_matrix)
+                                                temp_celf_sequence = copy.deepcopy(celf_sequence[kk])
+                                                temp_celf_sequence.insert(0, mep)
+                                                temp_sequence[5][kk] = copy.deepcopy(temp_celf_sequence)
 
-                                            if cur_budget + sc > begin_budget:
+                                            if cur_budget + seed_cost_dict[mep_i_node] > total_budget:
                                                 mep = celf_sequence[kk].pop(0)
-                                                mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+                                                mep_k_prod, mep_i_node, mep_mg, mep_flag = mep
                                                 if mep_i_node == '-1':
                                                     break
                                                 continue
@@ -80,16 +84,17 @@ if __name__ == '__main__':
                                                 for _ in range(monte_carlo):
                                                     ep_g += diff_main.getSeedSetProfit(seed_set_pmis)
                                                 cur_profit = round(ep_g / monte_carlo, 4)
-                                                cur_budget = round(cur_budget + sc, 2)
-                                                s_matrix[kk].append(copy.deepcopy(seed_set_pmis))
-                                                c_matrix[kk].append(round(cur_budget, 2))
+                                                cur_budget = round(cur_budget + seed_cost_dict[mep_i_node], 2)
+                                                s_matrix.append(copy.deepcopy(seed_set_pmis))
+                                                c_matrix.append(round(cur_budget, 2))
                                             else:
                                                 seed_set_t = copy.deepcopy(seed_set_pmis)
+                                                seed_set_t[mep_k_prod].add(mep_i_node)
                                                 ep_g = 0.0
                                                 for _ in range(monte_carlo):
                                                     ep_g += diff_main.getSeedSetProfit(seed_set_t)
-                                                ep1_g = round(ep_g / monte_carlo, 4)
-                                                mep_mg = round(ep1_g - cur_profit, 4)
+                                                ep_g = round(ep_g / monte_carlo, 4)
+                                                mep_mg = round(ep_g - cur_profit, 4)
                                                 mep_flag = seed_set_length
                                                 del seed_set_t
 
@@ -103,11 +108,11 @@ if __name__ == '__main__':
                                                             break
 
                                             mep = celf_sequence[kk].pop(0)
-                                            mep_k_prod, mep_i_node, mep_flag = mep[0], mep[1], mep[3]
+                                            mep_k_prod, mep_i_node, mep_mg, mep_flag = mep
 
-                                        s_matrix_sequence[begin_budget - 1][kk] = s_matrix[kk]
-                                        c_matrix_sequence[begin_budget - 1][kk] = c_matrix[kk]
-                                        ss_k_time_sequence[begin_budget - 1][kk] = round(time.time() - ss_strat_time + ss_acc_time, 2)
+                                        s_matrix_sequence[begin_budget - 1][kk] = copy.deepcopy(s_matrix)
+                                        c_matrix_sequence[begin_budget - 1][kk] = copy.deepcopy(c_matrix)
+                                        ss_k_time_sequence[begin_budget - 1] = round(time.time() - ss_strat_time, 2)
 
                                 for begin_budget in range(1, total_budget + 1):
                                     ss_strat_time = time.time()
@@ -145,7 +150,7 @@ if __name__ == '__main__':
                                         bud_index[pointer] -= 1
                                     seed_set = mep_result[1]
 
-                                    ss_time = round(time.time() - ss_strat_time + sum(ss_k_time_sequence[begin_budget - 1]), 2)
+                                    ss_time = round(time.time() - ss_strat_time + ss_k_time_sequence[begin_budget - 1], 2)
                                     print('ss_time = ' + str(ss_time) + 'sec')
                                     seed_set_sequence[begin_budget - 1].append(copy.deepcopy(seed_set))
                                     ss_time_sequence[begin_budget - 1].append(ss_time)
