@@ -162,7 +162,7 @@ if __name__ == '__main__':
                                     path1 = 'result/mngic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp
                                     if not os.path.isdir(path1):
                                         os.mkdir(path1)
-                                    path = 'result/mngic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + product_name
+                                    path = 'result/mngic_pps' + str(pps) + '_dis' + str(distribution_type) + '_wpiwp' * wpiwp + '/' + data_set_name + '_' + cas_model + '_' + product_name
                                     if not os.path.isdir(path):
                                         os.mkdir(path)
                                     fw = open(path + '/b' + str(bud) + '_i' + str(sample_number) + '.txt', 'w')
