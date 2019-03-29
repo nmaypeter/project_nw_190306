@@ -19,12 +19,12 @@ class SeedSelectionNGAP:
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
         celf_seq = [(-1, '-1', 0.0, 0)]
 
-        diffac_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
-            ep = diffac_ss.getSeedSetProfit(s_set)
+            ep = diffap_ss.getSeedSetProfit(s_set)
             mg = round(ep, 4)
             del s_set
 
@@ -46,12 +46,12 @@ class SeedSelectionNGAP:
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
         celf_seq = [(-1, '-1', 0.0, 0)]
 
-        diffac_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
-            ep = diffac_ss.getSeedSetProfit(s_set)
+            ep = diffap_ss.getSeedSetProfit(s_set)
             mg = round(ep, 4)
             del s_set
 
@@ -93,12 +93,12 @@ class SeedSelectionNGAPPW:
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
         celf_seq = [(-1, '-1', 0.0, 0)]
 
-        diffacpw_ss = DiffusionAccProbPW(self.graph_dict, self.seed_cost_dict, self.product_list, self.pw_list)
+        diffappw_ss = DiffusionAccProbPW(self.graph_dict, self.seed_cost_dict, self.product_list, self.pw_list)
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
-            ep = diffacpw_ss.getSeedSetProfit(s_set)
+            ep = diffappw_ss.getSeedSetProfit(s_set)
             mg = round(ep, 4)
             del s_set
 
@@ -120,12 +120,12 @@ class SeedSelectionNGAPPW:
         ### celf_ep: (list) [k_prod, i_node, mg, flag]
         celf_seq = [(-1, '-1', 0.0, 0)]
 
-        diffacpw_ss = DiffusionAccProbPW(self.graph_dict, self.seed_cost_dict, self.product_list, self.pw_list)
+        diffappw_ss = DiffusionAccProbPW(self.graph_dict, self.seed_cost_dict, self.product_list, self.pw_list)
 
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
-            ep = diffacpw_ss.getSeedSetProfit(s_set)
+            ep = diffappw_ss.getSeedSetProfit(s_set)
             mg = round(ep, 4)
             del s_set
 
