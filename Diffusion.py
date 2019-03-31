@@ -31,6 +31,7 @@ class Diffusion:
         self.product_list = prod_list
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
+        self.prob_threshold = 0.0001
         self.monte = monte
 
     def getSeedSetProfit(self, s_set):
@@ -82,7 +83,7 @@ class Diffusion:
             if i_node_t not in self.graph_dict:
                 continue
 
-            if acc_prob < 0.0001:
+            if acc_prob < self.prob_threshold:
                 continue
 
             out_dict = self.graph_dict[i_node_t]
@@ -119,6 +120,7 @@ class DiffusionPW:
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.pw_list = pw_list
+        self.prob_threshold = 0.0001
         self.monte = monte
 
     def getSeedSetProfit(self, s_set):
@@ -170,7 +172,7 @@ class DiffusionPW:
             if i_node_t not in self.graph_dict:
                 continue
 
-            if acc_prob < 0.0001:
+            if acc_prob < self.prob_threshold:
                 continue
 
             out_dict = self.graph_dict[i_node_t]
@@ -442,18 +444,17 @@ class DiffusionAccProb3:
         self.product_list = prod_list
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
+        self.prob_threshold = 0.0001
 
     def getSeedSetNeighborProfit(self, union_seed_set, i_node, i_acc_prob):
         i_dict = {}
-
-        diff_d = DiffusionAccProb3(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         for i_non in self.graph_dict[i_node]:
             if i_non in union_seed_set:
                 continue
             i_non_prob = str(round(float(self.graph_dict[i_node][i_non]) * float(i_acc_prob), 4))
 
-            if float(i_non_prob) < 0.001:
+            if float(i_non_prob) < self.prob_threshold:
                 continue
 
             if i_non not in i_dict:
@@ -462,6 +463,7 @@ class DiffusionAccProb3:
                 i_dict[i_non].append(i_non_prob)
 
             if i_non in self.graph_dict:
+                diff_d = DiffusionAccProb3(self.graph_dict, self.seed_cost_dict, self.product_list)
                 i_non_dict = diff_d.getSeedSetNeighborProfit(union_seed_set, i_non, i_non_prob)
 
                 for item in i_non_dict:
@@ -501,6 +503,111 @@ class DiffusionAccProb3:
                 ep += ((1 - acc_prob) * self.product_list[k][0])
 
         return round(ep, 4)
+
+
+class DiffusionAccProb4:
+    def __init__(self, g_dict, s_c_dict, prod_list):
+        ### g_dict: (dict) the graph
+        ### s_c_dict: (dict) the set of cost for seeds
+        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
+        ### num_node: (int) the number of nodes
+        ### num_product: (int) the kinds of products
+        self.graph_dict = g_dict
+        self.seed_cost_dict = s_c_dict
+        self.product_list = prod_list
+        self.num_node = len(s_c_dict)
+        self.num_product = len(prod_list)
+        self.prob_threshold = 0.0001
+
+    def getSeedSetNeighborProfit(self, union_seed_set, i_node, i_acc_prob, b_dict):
+        i_dict = {}
+
+        diff_d = DiffusionAccProb4(self.graph_dict, self.seed_cost_dict, self.product_list)
+
+        if i_node in b_dict and not list(set(union_seed_set).intersection(set(b_dict[i_node]))):
+            for item in b_dict[i_node]:
+                if item in union_seed_set:
+                    continue
+                for item_prob in b_dict[i_node][item]:
+                    item_acc_prob = str(round(float(item_prob) * float(i_acc_prob), 4))
+
+                    if float(item_acc_prob) < 0.001:
+                        continue
+                    if item in i_dict:
+                        i_dict[item].append(item_acc_prob)
+                    else:
+                        i_dict[item] = [item_acc_prob]
+        else:
+            for i_non in self.graph_dict[i_node]:
+                if i_non in union_seed_set:
+                    continue
+                i_non_prob = str(round(float(self.graph_dict[i_node][i_non]) * float(i_acc_prob), 4))
+
+                if float(i_non_prob) < self.prob_threshold:
+                    continue
+
+                if i_non not in i_dict:
+                    i_dict[i_non] = [i_non_prob]
+                elif i_non in i_dict:
+                    i_dict[i_non].append(i_non_prob)
+
+                if i_non in b_dict and not list(set(union_seed_set).intersection(set(b_dict[i_non]))):
+                    for item in b_dict[i_non]:
+                        if item in union_seed_set:
+                            continue
+                        for item_prob in b_dict[i_non][item]:
+                            item_acc_prob = str(round(float(item_prob) * float(i_non_prob), 4))
+
+                            if float(item_acc_prob) < 0.001:
+                                continue
+                            if item in i_dict:
+                                i_dict[item].append(item_acc_prob)
+                            else:
+                                i_dict[item] = [item_acc_prob]
+                else:
+                    if i_non in self.graph_dict:
+                        i_non_dict = diff_d.getSeedSetNeighborProfit(union_seed_set, i_non, i_non_prob, b_dict)
+
+                        for item in i_non_dict:
+                            if item in i_dict:
+                                i_dict[item] += i_non_dict[item]
+                            else:
+                                i_dict[item] = i_non_dict[item]
+
+        return i_dict
+
+    def getSeedSetProfit(self, s_set, b_dict):
+        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
+        ### ep: (float2) the expected profit
+        s_set_t = copy.deepcopy(s_set)
+        union_seed_set = set()
+        for k in range(self.num_product):
+            union_seed_set = union_seed_set | s_set_t[k]
+        ep = 0.0
+
+        diff_d = DiffusionAccProb4(self.graph_dict, self.seed_cost_dict, self.product_list)
+
+        for k in range(self.num_product):
+            s_dict = {}
+            for i in s_set_t[k]:
+                if i in self.graph_dict:
+                    i_dict = diff_d.getSeedSetNeighborProfit(union_seed_set, i, '1', b_dict)
+
+                    if i not in b_dict:
+                        b_dict[i] = i_dict
+
+                    for item in i_dict:
+                        if item in s_dict:
+                            s_dict[item] += i_dict[item]
+                        else:
+                            s_dict[item] = i_dict[item]
+            for i in s_dict:
+                acc_prob = 1.0
+                for prob in s_dict[i]:
+                    acc_prob *= (1 - float(prob))
+                ep += ((1 - acc_prob) * self.product_list[k][0])
+
+        return round(ep, 4), b_dict
 
 
 class DiffusionAccProbPW:
