@@ -148,7 +148,7 @@ class SeedSelectionNGAPPW:
 
 
 if __name__ == '__main__':
-    data_set_name = 'email_undirected'
+    data_set_name = 'toy2'
     product_name = 'r1p3n1'
     cascade_model = 'ic'
     total_budget = 10
@@ -179,6 +179,7 @@ if __name__ == '__main__':
     celf_sequence = ssngap.generateCelfSequence()
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
+    print(round(time.time() - start_time, 4))
 
     while now_budget < total_budget and mep_i_node != '-1':
         if now_budget + seed_cost_dict[mep_i_node] > total_budget:
@@ -188,11 +189,13 @@ if __name__ == '__main__':
                 break
             continue
 
+        print(round(time.time() - start_time, 4), mep_g[:4])
         seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
         if mep_flag == seed_set_length:
             seed_set[mep_k_prod].add(mep_i_node)
             now_profit = diffap.getSeedSetProfit(seed_set)
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
+            print(round(time.time() - start_time, 4), now_budget, now_profit, seed_set)
         else:
             seed_set_t = copy.deepcopy(seed_set)
             seed_set_t[mep_k_prod].add(mep_i_node)
