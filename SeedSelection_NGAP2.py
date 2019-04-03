@@ -17,28 +17,28 @@ class SeedSelectionNGAP:
     def generateCelfSequence(self):
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) [k_prod, i_node, mg, flag, s_i_tree, s_i_dict]
-        celf_seq = [(-1, '-1', 0.0, 0, [{} for _ in range(num_product)], [{} for _ in range(num_product)])]
+        celf_seq = [(-1, '-1', 0.0, 0, [{} for _ in range(num_product)], [[] for _ in range(num_product)])]
 
         diffap_ss = DiffusionAccProb5(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         i_t_dict, i_d_dict = {}, {}
         for i in self.graph_dict:
-            i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
+            i_tree, i_des = diffap_ss.buildNodeTree(i, i, '1')
             i_t_dict[i] = {i: i_tree}
-            i_d_dict[i] = i_dict
+            i_d_dict[i] = i_des
 
         for i in self.graph_dict.keys():
             print(i)
-            s_set = [set() for _ in range(num_product)]
-            s_i_tree, s_i_dict = [{} for _ in range(num_product)], [{} for _ in range(num_product)]
-            k_i_tree, k_i_dict = copy.deepcopy(i_t_dict[i]), copy.deepcopy(i_d_dict[i])
-            ep, s_i_tree, s_i_dict = diffap_ss.getExpectedProfit(0, i, s_set, s_i_tree, s_i_dict, k_i_tree, k_i_dict)
-            mg = round(ep, 4)
+            ei = diffap_ss.getExpectedInfluence(i_t_dict[i][i])
 
-            if mg > 0:
+            if ei > 0:
                 for k in range(self.num_product):
-                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
-                    celf_ep = (k, i, mg, 0, copy.deepcopy(s_i_tree), copy.deepcopy(s_i_dict))
+                    mg = round(ei * self.product_list[k][0], 4)
+                    s_i_tree, s_i_des = [{} for _ in range(num_product)], [[] for _ in range(num_product)]
+                    s_i_tree[k] = i_t_dict[i]
+                    s_i_des[k] = i_d_dict[i]
+                    celf_ep = (k, i, mg, 0, s_i_tree, s_i_des)
+                    del s_i_tree, s_i_des
                     celf_seq.append(celf_ep)
                     for celf_item in celf_seq:
                         if celf_ep[2] >= celf_item[2]:
@@ -75,18 +75,18 @@ if __name__ == '__main__':
 
     # -- initialization for each sample --
     now_budget, now_profit = 0.0, 0.0
-    now_s_i_tree, now_s_i_dict = [{} for _ in range(num_product)], [{} for _ in range(num_product)]
+    now_s_i_tree, now_s_i_des = [{} for _ in range(num_product)], [[] for _ in range(num_product)]
     seed_set = [set() for _ in range(num_product)]
 
-    celf_sequence, i_tree_dict, i_dict_dict = ssngap.generateCelfSequence()
+    celf_sequence, i_tree_dict, i_des_dict = ssngap.generateCelfSequence()
     mep_g = celf_sequence.pop(0)
-    mep_k_prod, mep_i_node, mep_profit, mep_flag, mep_s_i_tree, mep_s_i_dict = mep_g[0], mep_g[1], mep_g[2], mep_g[3], mep_g[4], mep_g[5]
+    mep_k_prod, mep_i_node, mep_profit, mep_flag, mep_s_i_tree, mep_s_i_des = mep_g[0], mep_g[1], mep_g[2], mep_g[3], mep_g[4], mep_g[5]
     print(round(time.time() - start_time, 4))
 
     while now_budget < total_budget and mep_i_node != '-1':
         if now_budget + seed_cost_dict[mep_i_node] > total_budget:
             mep_g = celf_sequence.pop(0)
-            mep_k_prod, mep_i_node, mep_profit, mep_flag, mep_s_i_tree, mep_s_i_dict = mep_g[0], mep_g[1], mep_g[2], mep_g[3], mep_g[4], mep_g[5]
+            mep_k_prod, mep_i_node, mep_profit, mep_flag, mep_s_i_tree, mep_s_i_des = mep_g[0], mep_g[1], mep_g[2], mep_g[3], mep_g[4], mep_g[5]
             if mep_i_node == '-1':
                 break
             continue
@@ -94,19 +94,19 @@ if __name__ == '__main__':
         print(round(time.time() - start_time, 4), mep_g[:4])
         seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
         if mep_flag == seed_set_length:
-            now_profit, now_s_i_tree, now_s_i_dict = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, now_s_i_dict, i_tree_dict[mep_i_node], i_dict_dict[mep_i_node])
+            now_profit += mep_profit
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
-            # now_s_i_tree = copy.deepcopy(mep_s_i_tree)
-            # now_s_i_dict = copy.deepcopy(mep_s_i_dict)
+            now_s_i_tree = mep_s_i_tree
+            now_s_i_des = mep_s_i_des
             seed_set[mep_k_prod].add(mep_i_node)
             print(round(time.time() - start_time, 4), now_budget, now_profit, seed_set)
         else:
-            ep_g, s_i_tree_g, s_i_dict_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, now_s_i_dict, i_tree_dict[mep_i_node], i_dict_dict[mep_i_node])
+            ep_g, s_i_tree_g, s_i_des_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, now_s_i_des, i_tree_dict[mep_i_node], i_des_dict[mep_i_node])
             mg_g = round(ep_g - now_profit, 4)
             ep_flag = seed_set_length
 
             if mg_g > 0:
-                celf_ep_g = (mep_k_prod, mep_i_node, mg_g, ep_flag, copy.deepcopy(s_i_tree_g), copy.deepcopy(s_i_dict_g))
+                celf_ep_g = (mep_k_prod, mep_i_node, mg_g, ep_flag, s_i_tree_g, s_i_des_g)
                 celf_sequence.append(celf_ep_g)
                 for celf_item_g in celf_sequence:
                     if celf_ep_g[2] >= celf_item_g[2]:
@@ -115,7 +115,7 @@ if __name__ == '__main__':
                         break
 
         mep_g = celf_sequence.pop(0)
-        mep_k_prod, mep_i_node, mep_profit, mep_flag, mep_s_i_tree, mep_s_i_dict = mep_g[0], mep_g[1], mep_g[2], mep_g[3], mep_g[4], mep_g[5]
+        mep_k_prod, mep_i_node, mep_profit, mep_flag, mep_s_i_tree, mep_s_i_des = mep_g[0], mep_g[1], mep_g[2], mep_g[3], mep_g[4], mep_g[5]
 
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
