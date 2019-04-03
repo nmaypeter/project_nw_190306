@@ -31,13 +31,11 @@ class SeedSelectionNGRPW:
             ep = 0.0
             for _ in range(self.monte):
                 ep += diffpw_ss.getSeedSetProfit(s_set)
-            ep = round(ep / self.monte, 4)
-            mg = round(ep, 4)
-            del s_set
+            temp_mg = round(ep / self.monte, 4)
 
-            if mg > 0:
+            if temp_mg > 0:
                 for k in range(self.num_product):
-                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    mg = round(temp_mg * self.product_list[k][0] * self.pw_list[k] / (self.product_list[0][0] * self.pw_list[0]), 4)
                     if self.seed_cost_dict[i] == 0:
                         break
                     else:
@@ -115,7 +113,6 @@ if __name__ == '__main__':
             else:
                 mg_ratio_g = round(mg_g / seed_cost_dict[mep_i_node], 4)
             ep_flag = seed_set_length
-            del seed_set_t
 
             if mg_ratio_g > 0:
                 celf_ep_g = (mep_k_prod, mep_i_node, mg_ratio_g, ep_flag)
