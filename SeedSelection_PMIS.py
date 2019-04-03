@@ -30,13 +30,11 @@ class SeedSelectionPMIS:
             ep = 0.0
             for _ in range(self.monte):
                 ep += diff_ss.getSeedSetProfit(s_set)
-            ep = round(ep / self.monte, 4)
-            mg = round(ep, 4)
-            del s_set
+            temp_mg = round(ep / self.monte, 4)
 
-            if mg > 0:
+            if temp_mg > 0:
                 for k in range(self.num_product):
-                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    mg = round(temp_mg * self.product_list[k][0] / self.product_list[0][0], 4)
                     celf_ep = (k, i, mg, 0)
                     celf_seq[k].append(celf_ep)
                     for celf_item in celf_seq[k]:
@@ -71,13 +69,11 @@ class SeedSelectionPMISAP:
         for i in set(self.graph_dict.keys()):
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
-            ep = diffap_ss.getSeedSetProfit(s_set)
-            mg = round(ep, 4)
-            del s_set
+            temp_mg = diffap_ss.getSeedSetProfit(s_set)
 
-            if mg > 0:
+            if temp_mg > 0:
                 for k in range(self.num_product):
-                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    mg = round(temp_mg * self.product_list[k][0] / self.product_list[0][0], 4)
                     celf_ep = (k, i, mg, 0)
                     celf_seq[k].append(celf_ep)
                     for celf_item in celf_seq[k]:
