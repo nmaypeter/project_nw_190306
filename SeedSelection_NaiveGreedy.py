@@ -29,13 +29,11 @@ class SeedSelectionNG:
             ep = 0.0
             for _ in range(self.monte):
                 ep += diff_ss.getSeedSetProfit(s_set)
-            ep = round(ep / self.monte, 4)
-            mg = round(ep, 4)
-            del s_set
+            temp_mg = round(ep / self.monte, 4)
 
-            if mg > 0:
+            if temp_mg > 0:
                 for k in range(self.num_product):
-                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    mg = round(temp_mg * self.product_list[k][0] / self.product_list[0][0], 4)
                     celf_ep = [k, i, mg, 0]
                     celf_seq.append(celf_ep)
                     for celf_item in celf_seq:
@@ -104,7 +102,6 @@ if __name__ == '__main__':
             ep_g = round(ep_g / monte_carlo, 4)
             mg_g = round(ep_g - now_profit, 4)
             ep_flag = seed_set_length
-            del seed_set_t
 
             if mg_g > 0:
                 celf_ep_g = (mep_k_prod, mep_i_node, mg_g, ep_flag)
