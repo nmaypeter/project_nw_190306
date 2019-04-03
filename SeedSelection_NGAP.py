@@ -25,12 +25,12 @@ class SeedSelectionNGAP:
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
             ep = diffap_ss.getSeedSetProfit(s_set)
-            mg = round(ep, 4)
+            temp_mg = round(ep, 4)
             del s_set
 
-            if mg > 0:
+            if temp_mg > 0:
                 for k in range(self.num_product):
-                    mg = round(mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                    mg = round(temp_mg * self.product_list[k][0] / self.product_list[0][0], 4)
                     celf_ep = (k, i, mg, 0)
                     celf_seq.append(celf_ep)
                     for celf_item in celf_seq:
