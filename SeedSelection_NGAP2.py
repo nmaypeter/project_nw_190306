@@ -19,7 +19,7 @@ class SeedSelectionNGAP:
         ### celf_ep: (list) [k_prod, i_node, mg, flag, s_i_tree, s_i_dict]
         celf_seq = [(-1, '-1', 0.0, 0, [{} for _ in range(num_product)], [[] for _ in range(num_product)])]
 
-        diffap_ss = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diffap_ss = DiffusionAccProb6B(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         i_t_dict, i_d_dict = {}, {}
         m_mg, m_s_i_tree, m_s_i_des = 0.0, [{} for _ in range(num_product)], [[] for _ in range(num_product)]
@@ -55,7 +55,7 @@ class SeedSelectionNGAP:
 
 
 if __name__ == '__main__':
-    data_set_name = 'email_undirected'
+    data_set_name = 'toy2'
     product_name = 'r1p3n1'
     cascade_model = 'ic'
     total_budget = 10
@@ -76,7 +76,8 @@ if __name__ == '__main__':
     # -- initialization for each budget --
     start_time = time.time()
     ssngap = SeedSelectionNGAP(graph_dict, seed_cost_dict, product_list)
-    diffap = DiffusionAccProb6(graph_dict, seed_cost_dict, product_list)
+    celf_sequence, i_tree_dict, i_des_dict, app_now_s_i_tree, app_now_s_i_des = ssngap.generateCelfSequence()
+    diffap = DiffusionAccProb6(graph_dict, seed_cost_dict, product_list, i_tree_dict, i_des_dict)
 
     # -- initialization for each sample --
     now_budget, now_profit = 0.0, 0.0
@@ -84,7 +85,6 @@ if __name__ == '__main__':
     now_s_i_tree, now_s_i_des = [{} for _ in range(num_product)], [[] for _ in range(num_product)]
     seed_set = [set() for _ in range(num_product)]
 
-    celf_sequence, i_tree_dict, i_des_dict, app_now_s_i_tree, app_now_s_i_des = ssngap.generateCelfSequence()
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
     print(round(time.time() - start_time, 4))
@@ -107,7 +107,7 @@ if __name__ == '__main__':
             seed_set[mep_k_prod].add(mep_i_node)
             print(round(time.time() - start_time, 4), now_budget, now_profit, seed_set)
         else:
-            ep_g, s_i_tree_g, s_i_des_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, now_s_i_des, i_tree_dict[mep_i_node], i_des_dict[mep_i_node])
+            ep_g, s_i_tree_g, s_i_des_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, now_s_i_des)
             mg_g = round(ep_g - now_profit, 4)
             ep_flag = seed_set_length
             if ep_g >= app_now_profit:
