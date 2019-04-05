@@ -46,45 +46,6 @@ class SeedSelectionPMIS:
         return celf_seq
 
 
-class SeedSelectionPMISAP:
-    def __init__(self, g_dict, s_c_dict, prod_list):
-        ### g_dict: (dict) the graph
-        ### s_c_dict: (dict) the set of cost for seeds
-        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### num_node: (int) the number of nodes
-        ### num_product: (int) the kinds of products
-        self.graph_dict = g_dict
-        self.seed_cost_dict = s_c_dict
-        self.product_list = prod_list
-        self.num_node = len(s_c_dict)
-        self.num_product = len(prod_list)
-
-    def generateCelfSequence(self):
-        # -- calculate expected profit for all combinations of nodes and products --
-        ### celf_ep: (list) [k_prod, i_node, mg, flag]
-        celf_seq = [[(-1, '-1', 0.0, 0)] for _ in range(self.num_product)]
-
-        diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
-
-        for i in set(self.graph_dict.keys()):
-            s_set = [set() for _ in range(self.num_product)]
-            s_set[0].add(i)
-            temp_mg = diffap_ss.getSeedSetProfit(s_set)
-
-            if temp_mg > 0:
-                for k in range(self.num_product):
-                    mg = round(temp_mg * self.product_list[k][0] / self.product_list[0][0], 4)
-                    celf_ep = (k, i, mg, 0)
-                    celf_seq[k].append(celf_ep)
-                    for celf_item in celf_seq[k]:
-                        if celf_ep[2] >= celf_item[2]:
-                            celf_seq[k].insert(celf_seq[k].index(celf_item), celf_ep)
-                            celf_seq[k].pop()
-                            break
-
-        return celf_seq
-
-
 if __name__ == '__main__':
     data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
