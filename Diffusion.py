@@ -777,7 +777,7 @@ class DiffusionAccProb5:
         return round(ep, 4), i_tree, i_des
 
 
-class DiffusionAccProb6:
+class DiffusionAccProb6B:
     def __init__(self, g_dict, s_c_dict, prod_list):
         ### g_dict: (dict) the graph
         ### s_c_dict: (dict) the set of cost for seeds
@@ -795,7 +795,7 @@ class DiffusionAccProb6:
         i_tree, i_dict, i_descendants = {}, {}, []
 
         if i_node in self.graph_dict:
-            diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+            diff_d = DiffusionAccProb6B(self.graph_dict, self.seed_cost_dict, self.product_list)
             for i_non in self.graph_dict[i_node]:
                 if i_non == seed:
                     continue
@@ -824,9 +824,26 @@ class DiffusionAccProb6:
 
         return i_tree, i_dict, i_descendants
 
+
+class DiffusionAccProb6:
+    def __init__(self, g_dict, s_c_dict, prod_list, i_tree_dict, i_des_dict):
+        ### g_dict: (dict) the graph
+        ### s_c_dict: (dict) the set of cost for seeds
+        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
+        ### num_node: (int) the number of nodes
+        ### num_product: (int) the kinds of products
+        self.graph_dict = g_dict
+        self.seed_cost_dict = s_c_dict
+        self.product_list = prod_list
+        self.num_node = len(s_c_dict)
+        self.num_product = len(prod_list)
+        self.i_tree_dict = i_tree_dict
+        self.i_des_dict = i_des_dict
+        self.prob_threshold = 0.001
+
     def removeKIFromSITree(self, i_node, s_i_tree):
         temp_s_i_tree = {}
-        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list, self.i_tree_dict, self.i_des_dict)
         for i in s_i_tree:
             if i == i_node:
                 continue
@@ -834,23 +851,29 @@ class DiffusionAccProb6:
                 if len(s_i_tree[i][1]) == 0:
                     temp_s_i_tree[i] = [s_i_tree[i][0], {}]
                     continue
-                temp_s_i_tree[i] = [s_i_tree[i][0], diff_d.removeKIFromSITree(i_node, s_i_tree[i][1])]
+
+                if i_node in self.i_des_dict[i]:
+                    temp_s_i_tree[i] = [s_i_tree[i][0], diff_d.removeKIFromSITree(i_node, s_i_tree[i][1])]
+                else:
+                    temp_s_i_tree[i] = s_i_tree[i]
 
         return temp_s_i_tree
 
     def removeSIFromKITree(self, s_set_k, k_i_tree):
         temp_k_i_tree = {}
-        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list, self.i_tree_dict, self.i_des_dict)
         for i in k_i_tree:
-            if len(s_set_k.intersection(set(list(k_i_tree.keys())))) != 0:
-                for s in s_set_k:
-                    if s == i:
-                        continue
+            if i in s_set_k:
+                continue
             else:
                 if len(k_i_tree[i][1]) == 0:
                     temp_k_i_tree[i] = [k_i_tree[i][0], {}]
                     continue
-                temp_k_i_tree[i] = [k_i_tree[i][0], diff_d.removeKIFromSITree(s_set_k, k_i_tree[i][1])]
+
+                if len(s_set_k.intersection(set(self.i_des_dict[i]))) != 0:
+                    temp_k_i_tree[i] = [k_i_tree[i][0], diff_d.removeSIFromKITree(s_set_k, k_i_tree[i][1])]
+                else:
+                    temp_k_i_tree[i] = k_i_tree[i]
 
         return temp_k_i_tree
 
@@ -869,20 +892,20 @@ class DiffusionAccProb6:
                         else:
                             i_dict[k][i_node] = [i_prob]
 
-                        for i in i_subtree:
-                            i_dict_seq.append([i, i_subtree[i][0], i_subtree[i][1]])
+                        for i_n in i_subtree:
+                            i_dict_seq.append([i_n, i_subtree[i_n][0], i_subtree[i_n][1]])
 
         return i_dict, i_tree
 
-    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_tree, s_i_des, k_i_tree, k_i_des):
+    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_tree, s_i_des):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
         temp_s_i_tree = s_i_tree
         temp_s_i_des = s_i_des
         temp_k_i_tree = [{} for _ in range(self.num_product)]
-        temp_k_i_tree[k_prod] = k_i_tree
+        temp_k_i_tree[k_prod] = self.i_tree_dict[i_node]
         temp_k_i_des = [[] for _ in range(self.num_product)]
-        temp_k_i_des[k_prod] = k_i_des
-        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+        temp_k_i_des[k_prod] = self.i_des_dict[i_node]
+        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list, self.i_tree_dict, self.i_des_dict)
 
         if i_node in s_i_des[k_prod]:
             temp_s_i_tree, temp_s_i_des = [{} for _ in range(self.num_product)], [[] for _ in range(self.num_product)]
@@ -894,15 +917,14 @@ class DiffusionAccProb6:
                     temp_s_i_tree[k] = s_i_tree[k]
                     temp_s_i_des[k] = s_i_des[k]
 
-        if len(s_set[k_prod].intersection(set(temp_k_i_des[k_prod]))) != 0:
+        if len(s_set[k_prod].intersection(set(self.i_des_dict[i_node]))) != 0:
             temp_k_i_tree, temp_k_i_des = [{} for _ in range(self.num_product)], [[] for _ in range(self.num_product)]
             for k in range(self.num_product):
                 if k == k_prod:
-                    for i in k_i_tree:
-                        temp_k_i_tree[k_prod][i] = diff_d.removeSIFromKITree(s_set[k_prod], k_i_tree[i])
-                else:
-                    temp_k_i_tree[k] = k_i_tree
-                    temp_k_i_des[k] = k_i_des
+                    for i in self.i_tree_dict[i_node]:
+                        temp_k_i_tree[k_prod][i] = self.i_tree_dict[i_node][i]
+                        for s in s_set[k_prod]:
+                            temp_k_i_tree[k_prod][i] = diff_d.removeKIFromSITree(s, temp_k_i_tree[k_prod][i])
 
         if len(temp_s_i_tree[k_prod]) == 0:
             temp_s_i_tree[k_prod] = temp_k_i_tree[k_prod]
