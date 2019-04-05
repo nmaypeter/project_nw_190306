@@ -21,7 +21,7 @@ class SeedSelectionNGAP:
 
         diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
-        for i in set(self.graph_dict.keys()):
+        for i in self.graph_dict:
             s_set = [set() for _ in range(self.num_product)]
             s_set[0].add(i)
             ep = diffap_ss.getSeedSetProfit(s_set)
