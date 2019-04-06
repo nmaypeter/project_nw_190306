@@ -55,7 +55,7 @@ class SeedSelectionNGAP:
 
 
 if __name__ == '__main__':
-    data_set_name = 'toy2'
+    data_set_name = 'email_undirected'
     product_name = 'r1p3n1'
     cascade_model = 'ic'
     total_budget = 10
@@ -77,8 +77,9 @@ if __name__ == '__main__':
     start_time = time.time()
     ssngap = SeedSelectionNGAP(graph_dict, seed_cost_dict, product_list)
     celf_sequence, i_tree_dict, i_des_dict, app_now_s_i_tree, app_now_s_i_des = ssngap.generateCelfSequence()
-    diffap = DiffusionAccProb6(graph_dict, seed_cost_dict, product_list, i_tree_dict, i_des_dict)
-
+    diffap = DiffusionAccProb6(graph_dict, seed_cost_dict, product_list, i_des_dict)
+    for i in i_des_dict:
+        print(i_des_dict[i])
     # -- initialization for each sample --
     now_budget, now_profit = 0.0, 0.0
     app_now_profit = 0.0
@@ -107,7 +108,7 @@ if __name__ == '__main__':
             seed_set[mep_k_prod].add(mep_i_node)
             print(round(time.time() - start_time, 4), now_budget, now_profit, seed_set)
         else:
-            ep_g, s_i_tree_g, s_i_des_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, now_s_i_des)
+            ep_g, s_i_tree_g, s_i_des_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, now_s_i_des, i_tree_dict[mep_i_node])
             mg_g = round(ep_g - now_profit, 4)
             ep_flag = seed_set_length
             if ep_g >= app_now_profit:
