@@ -846,7 +846,7 @@ class DiffusionAccProb6:
         self.i_des_dict = i_des_dict
         self.prob_threshold = 0.001
 
-    def removeKIFromSITree(self, i_node, s_i_tree):
+    def removeKIFromSITree(self, ki, i_node, s_i_tree):
         # temp_s_i_tree = {}
         # seq = []
         #
@@ -887,12 +887,39 @@ class DiffusionAccProb6:
                     temp_s_i_tree[i] = [s_i_tree[i][0], {}]
                     continue
 
-                if i_node in self.i_des_dict[i]:
-                    temp_s_i_tree[i] = [s_i_tree[i][0], diff_d.removeKIFromSITree(i_node, s_i_tree[i][1])]
+                if i_node in self.i_des_dict[ki][i]:
+                    if i not in temp_s_i_tree:
+                        temp_s_i_tree[i] = [s_i_tree[i][0], {}]
+                    for ii in s_i_tree[i][1]:
+                        if ii == i_node:
+                            continue
+                        else:
+                            if len(s_i_tree[i][1][ii][1]) == 0:
+                                temp_s_i_tree[i][1][ii] = [s_i_tree[i][1][ii][0], {}]
+                                continue
+
+                            if i_node in self.i_des_dict[i][ii]:
+                                if ii not in temp_s_i_tree[i]:
+                                    temp_s_i_tree[i][1][ii] = [s_i_tree[i][1][ii][0], {}]
+                                for iii in s_i_tree[i][1][ii][1]:
+                                    if iii == i_node:
+                                        continue
+                                    else:
+                                        if len(s_i_tree[i][1][ii][1][iii][1]) == 0:
+                                            temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], {}]
+                                            continue
+
+                                        if i_node in self.i_des_dict[ii][iii]:
+                                            temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], diff_d.removeKIFromSITree(ki, i_node, s_i_tree[i][1][ii][1][iii][1])]
+                                        else:
+                                            temp_s_i_tree[i][1][ii][1][iii] = s_i_tree[i][1][ii][1][iii]
+                            else:
+                                temp_s_i_tree[i][1][ii] = s_i_tree[i][1][ii]
                 else:
                     temp_s_i_tree[i] = s_i_tree[i]
         # del diff_d
-        # gc.collect()
+        # if ki == i_node:
+        #     gc.collect()
 
         return temp_s_i_tree
 
@@ -951,7 +978,7 @@ class DiffusionAccProb6:
             for k in range(self.num_product):
                 if k == k_prod:
                     for i in s_i_tree[k_prod]:
-                        temp_s_i_tree[k][i] = diff_d.removeKIFromSITree(i_node, s_i_tree[k_prod][i])
+                        temp_s_i_tree[k][i] = diff_d.removeKIFromSITree(i, i_node, s_i_tree[k_prod][i])
                 else:
                     temp_s_i_tree[k] = s_i_tree[k]
                     temp_s_i_des[k] = s_i_des[k]
@@ -959,10 +986,10 @@ class DiffusionAccProb6:
         if len(s_set[k_prod].intersection(set(self.i_des_dict[i_node]))) != 0:
             temp_k_i_tree, temp_k_i_des = [{} for _ in range(self.num_product)], [[] for _ in range(self.num_product)]
             for i in k_i_tree:
-                # temp_k_i_tree[k_prod][i] = diff_d.removeSIFromKITree(s_set[k_prod], k_i_tree[i])
-                temp_k_i_tree[k_prod][i] = k_i_tree[i]
-                for s in s_set[k_prod]:
-                    temp_k_i_tree[k_prod][i] = diff_d.removeKIFromSITree(s, temp_k_i_tree[k_prod][i])
+                temp_k_i_tree[k_prod][i] = diff_d.removeSIFromKITree(s_set[k_prod], k_i_tree[i])
+                # temp_k_i_tree[k_prod][i] = k_i_tree[i]
+                # for s in s_set[k_prod]:
+                #     temp_k_i_tree[k_prod][i] = diff_d.removeKIFromSITree(s, s, temp_k_i_tree[k_prod][i])
 
         if len(temp_s_i_tree[k_prod]) == 0:
             temp_s_i_tree[k_prod] = temp_k_i_tree[k_prod]
