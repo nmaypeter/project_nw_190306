@@ -73,14 +73,15 @@ if __name__ == '__main__':
     # -- initialization for each budget --
     start_time = time.time()
     ssngap = SeedSelectionNGAP(graph_dict, seed_cost_dict, product_list)
-    celf_sequence, i_tree_dict, app_now_s_i_tree = ssngap.generateCelfSequence()
     diffap = DiffusionAccProb6(graph_dict, seed_cost_dict, product_list)
+
     # -- initialization for each sample --
     now_budget, now_profit = 0.0, 0.0
     app_now_profit = 0.0
     now_s_i_tree = [{} for _ in range(num_product)]
     seed_set = [set() for _ in range(num_product)]
 
+    celf_sequence, i_tree_dict, app_now_s_i_tree = ssngap.generateCelfSequence()
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
     print(round(time.time() - start_time, 4))
