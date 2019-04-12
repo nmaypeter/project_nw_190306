@@ -31,23 +31,26 @@ if __name__ == '__main__':
                             num_product = len(product_list)
 
                             seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
-                            ssngapr_main = SeedSelectionNGAP(graph_dict, seed_cost_dict, product_list)
+                            ssngap_main = SeedSelectionNGAP(graph_dict, seed_cost_dict, product_list)
                             diffap_main = DiffusionAccProb(graph_dict, seed_cost_dict, product_list)
                             for sample_count in range(sample_number):
                                 ss_strat_time = time.time()
                                 begin_budget = 1
                                 now_budget, now_profit = 0.0, 0.0
+                                app_now_profit = 0.0
+                                now_s_i_tree = [{} for _ in range(num_product)]
                                 seed_set = [set() for _ in range(num_product)]
-                                celf_sequence = ssngapr_main.generateCelfSequenceR()
+                                celf_sequence, i_tree_dict, app_now_s_i_tree = ssngap_main.generateCelfSequenceR()
                                 ss_acc_time = round(time.time() - ss_strat_time, 2)
-                                temp_sequence = [[begin_budget, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(celf_sequence), ss_acc_time]]
+                                temp_sequence = [[begin_budget, now_budget, now_profit, app_now_profit, copy.deepcopy(now_s_i_tree), copy.deepcopy(seed_set),
+                                                  copy.deepcopy(celf_sequence), copy.deepcopy(app_now_s_i_tree), ss_acc_time]]
                                 while len(temp_sequence) != 0:
                                     ss_strat_time = time.time()
-                                    begin_budget, now_budget, now_profit, seed_set, celf_sequence, ss_acc_time = temp_sequence.pop(0)
+                                    begin_budget, now_budget, now_profit, app_now_profit, now_s_i_tree, seed_set, celf_sequence, app_now_s_i_tree, ss_acc_time = temp_sequence.pop(0)
                                     print('@ mngapric seed selection @ data_set_name = ' + data_set_name + '_' + cas_model + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                           ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                     mep_g = celf_sequence.pop(0)
-                                    mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
+                                    mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
 
                                     while now_budget < begin_budget and mep_i_node != '-1':
                                         sc = seed_cost_dict[mep_i_node]
@@ -55,30 +58,34 @@ if __name__ == '__main__':
                                             ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                             temp_celf_sequence = copy.deepcopy(celf_sequence)
                                             temp_celf_sequence.insert(0, mep_g)
-                                            temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(seed_set), copy.deepcopy(temp_celf_sequence), ss_time])
+                                            temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(app_now_profit), copy.deepcopy(now_s_i_tree), copy.deepcopy(seed_set),
+                                                                  copy.deepcopy(temp_celf_sequence), copy.deepcopy(app_now_s_i_tree), ss_time])
 
                                         if now_budget + sc > begin_budget:
                                             mep_g = celf_sequence.pop(0)
-                                            mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
+                                            mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
                                             if mep_i_node == '-1':
                                                 break
                                             continue
 
                                         seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
                                         if mep_flag == seed_set_length:
+                                            now_profit = round(now_profit + mep_profit * seed_cost_dict[mep_i_node], 4)
+                                            now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
+                                            now_s_i_tree = app_now_s_i_tree
+                                            app_now_profit = 0.0
                                             seed_set[mep_k_prod].add(mep_i_node)
-                                            now_profit = diffap_main.getSeedSetProfit(seed_set)
-                                            now_budget = round(now_budget + sc, 2)
                                         else:
-                                            seed_set_t = copy.deepcopy(seed_set)
-                                            ep_g = diffap_main.getSeedSetProfit(seed_set_t)
+                                            ep_g, s_i_tree_g = diffap_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, i_tree_dict[mep_i_node])
                                             mg_g = round(ep_g - now_profit, 4)
                                             if seed_cost_dict[mep_i_node] == 0:
                                                 mg_ratio_g = 0
                                             else:
                                                 mg_ratio_g = round(mg_g / seed_cost_dict[mep_i_node], 4)
                                             ep_flag = seed_set_length
-                                            del seed_set_t
+                                            if mg_ratio_g >= app_now_profit:
+                                                app_now_profit = mg_ratio_g
+                                                app_now_s_i_tree = s_i_tree_g
 
                                             if mg_ratio_g > 0:
                                                 celf_ep_g = (mep_k_prod, mep_i_node, mg_ratio_g, ep_flag)
@@ -90,7 +97,7 @@ if __name__ == '__main__':
                                                         break
 
                                         mep_g = celf_sequence.pop(0)
-                                        mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
+                                        mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
 
                                     ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                     print('ss_time = ' + str(ss_time) + 'sec')
