@@ -1,6 +1,5 @@
 from Initialization import *
 import copy
-import gc
 
 
 def getProductWeight(prod_list, dis):
@@ -207,606 +206,25 @@ class DiffusionAccProb:
         self.product_list = prod_list
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
-
-    def getSeedSetProfit(self, s_set):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        ep = 0.0
-
-        for k in range(self.num_product):
-            i_dict = {}
-            for i in s_set_t[k]:
-                if i in self.graph_dict:
-                    for ii in self.graph_dict[i]:
-                        if ii in s_set_t[k]:
-                            continue
-                        ii_prob = self.graph_dict[i][ii]
-
-                        if ii not in i_dict:
-                            i_dict[ii] = [ii_prob]
-                        elif ii in i_dict:
-                            i_dict[ii].append(ii_prob)
-
-                        if ii not in self.graph_dict:
-                            continue
-
-                        for iii in self.graph_dict[ii]:
-                            if iii in s_set_t[k]:
-                                continue
-                            iii_prob = str(round(float(ii_prob) * float(self.graph_dict[ii][iii]), 4))
-
-                            if iii not in i_dict:
-                                i_dict[iii] = [iii_prob]
-                            elif iii in i_dict:
-                                i_dict[iii].append(iii_prob)
-
-                            if iii not in self.graph_dict:
-                                continue
-
-                            for iiii in self.graph_dict[iii]:
-                                if iiii in s_set_t[k]:
-                                    continue
-                                iiii_prob = str(round(float(iii_prob) * float(self.graph_dict[iii][iiii]), 4))
-
-                                if iiii not in i_dict:
-                                    i_dict[iiii] = [iiii_prob]
-                                elif iiii in i_dict:
-                                    i_dict[iiii].append(iiii_prob)
-
-            for i in i_dict:
-                acc_prob = 1.0
-                for prob in i_dict[i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0])
-
-        return round(ep, 4)
-
-
-class DiffusionAccProb2:
-    def __init__(self, g_dict, s_c_dict, prod_list):
-        ### g_dict: (dict) the graph
-        ### s_c_dict: (dict) the set of cost for seeds
-        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### num_node: (int) the number of nodes
-        ### num_product: (int) the kinds of products
-        self.graph_dict = g_dict
-        self.seed_cost_dict = s_c_dict
-        self.product_list = prod_list
-        self.num_node = len(s_c_dict)
-        self.num_product = len(prod_list)
-
-    def generateIDict(self, i_node):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set = [set() for _ in range(self.num_product)]
-        s_set[0].add(i_node)
-
-        i_dict = {}
-        if i_node in self.graph_dict:
-            for ii in self.graph_dict[i_node]:
-                if ii == i_node:
-                    continue
-                ii_prob = self.graph_dict[i_node][ii]
-
-                if ii not in i_dict:
-                    i_dict[ii] = [ii_prob]
-                elif ii in i_dict:
-                    i_dict[ii].append(ii_prob)
-
-                if ii not in self.graph_dict:
-                    continue
-
-                for iii in self.graph_dict[ii]:
-                    if iii == i_node:
-                        continue
-                    iii_prob = str(round(float(ii_prob) * float(self.graph_dict[ii][iii]), 4))
-
-                    if iii not in i_dict:
-                        i_dict[iii] = [iii_prob]
-                    elif iii in i_dict:
-                        i_dict[iii].append(iii_prob)
-
-                    if iii not in self.graph_dict:
-                        continue
-
-                    for iiii in self.graph_dict[iii]:
-                        if iiii == i_node:
-                            continue
-                        iiii_prob = str(round(float(iii_prob) * float(self.graph_dict[iii][iiii]), 4))
-
-                        if iiii not in i_dict:
-                            i_dict[iiii] = [iiii_prob]
-                        elif iiii in i_dict:
-                            i_dict[iiii].append(iiii_prob)
-
-        ep = 0.0
-        for i in i_dict:
-            acc_prob = 1.0
-            for prob in i_dict[i]:
-                acc_prob *= (1 - float(prob))
-            ep += ((1 - acc_prob) * self.product_list[0][0])
-
-        return round(ep, 4), i_dict
-
-    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_dict, k_i_dict):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        temp_s_i_dict = [{} for _ in range(self.num_product)]
-        temp_k_i_dict = copy.deepcopy(k_i_dict)
-        temp_union_seed_set = set()
-        for k in range(self.num_product):
-            temp_union_seed_set = temp_union_seed_set | s_set[k]
-
-        if i_node not in s_set[k_prod]:
-            temp_s_i_dict = copy.deepcopy(s_i_dict)
-
-            if i_node in s_i_dict[k_prod]:
-                for i_prob in s_i_dict[k_prod][i_node]:
-                    if i_node in temp_s_i_dict[k_prod] and i_prob in temp_s_i_dict[k_prod][i_node]:
-                        temp_s_i_dict[k_prod][i_node].remove(i_prob)
-
-                    if i_node not in self.graph_dict:
-                        continue
-
-                    for ii in self.graph_dict[i_node]:
-                        if ii in temp_union_seed_set:
-                            continue
-                        ii_prob = self.graph_dict[i_node][ii]
-                        ii_prob = str(round(float(i_prob) * float(ii_prob), 4))
-                        if ii in temp_s_i_dict[k_prod] and ii_prob in temp_s_i_dict[k_prod][ii]:
-                            temp_s_i_dict[k_prod][ii].remove(ii_prob)
-
-                        if ii not in self.graph_dict:
-                            continue
-
-                        for iii in self.graph_dict[ii]:
-                            if iii in temp_union_seed_set:
-                                continue
-                            iii_prob = self.graph_dict[ii][iii]
-                            iii_prob = str(round(float(ii_prob) * float(iii_prob), 4))
-                            if iii in temp_s_i_dict[k_prod] and iii_prob in temp_s_i_dict[k_prod][iii]:
-                                temp_s_i_dict[k_prod][iii].remove(iii_prob)
-
-                            if iii not in self.graph_dict:
-                                continue
-
-                            for iiii in self.graph_dict[iii]:
-                                if iiii in temp_union_seed_set:
-                                    continue
-                                iiii_prob = self.graph_dict[iii][iiii]
-                                iiii_prob = str(round(float(iii_prob) * float(iiii_prob), 4))
-
-                                if iiii in temp_s_i_dict[k_prod] and iiii_prob in temp_s_i_dict[k_prod][iiii]:
-                                    temp_s_i_dict[k_prod][iiii].remove(iiii_prob)
-
-            for s_node in s_set[k_prod]:
-                if s_node in k_i_dict:
-                    for s_prob in k_i_dict[s_node]:
-                        if s_node in temp_k_i_dict and s_prob in temp_k_i_dict[s_node]:
-                            temp_k_i_dict[s_node].remove(s_prob)
-
-                            if s_node not in self.graph_dict:
-                                continue
-
-                            for ss in self.graph_dict[s_node]:
-                                ss_prob = self.graph_dict[s_node][ss]
-                                ss_prob = str(round(float(s_prob) * float(ss_prob), 4))
-                                if ss in temp_k_i_dict and ss_prob in temp_k_i_dict[ss]:
-                                    temp_k_i_dict[ss].remove(ss_prob)
-
-                                if ss not in self.graph_dict:
-                                    continue
-
-                                for sss in self.graph_dict[ss]:
-                                    sss_prob = self.graph_dict[ss][sss]
-                                    sss_prob = str(round(float(ss_prob) * float(sss_prob), 4))
-                                    if sss in temp_k_i_dict and sss_prob in temp_k_i_dict[sss]:
-                                        temp_k_i_dict[sss].remove(sss_prob)
-
-                                    if sss not in self.graph_dict:
-                                        continue
-
-                                    for ssss in self.graph_dict[sss]:
-                                        ssss_prob = self.graph_dict[sss][ssss]
-                                        ssss_prob = str(round(float(sss_prob) * float(ssss_prob), 4))
-
-                                        if ssss in temp_k_i_dict and ssss_prob in temp_k_i_dict[ssss]:
-                                            temp_k_i_dict[ssss].remove(ssss_prob)
-
-        for item in temp_k_i_dict:
-            if item in temp_s_i_dict[k_prod]:
-                temp_s_i_dict[k_prod][item] += temp_k_i_dict[item]
-            else:
-                temp_s_i_dict[k_prod][item] = temp_k_i_dict[item]
-
-        ep = 0.0
-        for k in range(self.num_product):
-            for i in temp_s_i_dict[k]:
-                acc_prob = 1.0
-                for prob in temp_s_i_dict[k][i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0])
-
-        return round(ep, 4), temp_s_i_dict
-
-
-class DiffusionAccProb3:
-    def __init__(self, g_dict, s_c_dict, prod_list):
-        ### g_dict: (dict) the graph
-        ### s_c_dict: (dict) the set of cost for seeds
-        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### num_node: (int) the number of nodes
-        ### num_product: (int) the kinds of products
-        self.graph_dict = g_dict
-        self.seed_cost_dict = s_c_dict
-        self.product_list = prod_list
-        self.num_node = len(s_c_dict)
-        self.num_product = len(prod_list)
-        self.prob_threshold = 0.001
-
-    def getSeedSetNeighborProfit(self, s_set_k, i_node, i_acc_prob):
-        i_dict = {}
-
-        for i_non in self.graph_dict[i_node]:
-            if i_non in s_set_k:
-                continue
-            i_non_prob = str(round(float(self.graph_dict[i_node][i_non]) * float(i_acc_prob), 4))
-
-            if float(i_non_prob) < self.prob_threshold:
-                continue
-
-            if i_non not in i_dict:
-                i_dict[i_non] = [i_non_prob]
-            elif i_non in i_dict:
-                i_dict[i_non].append(i_non_prob)
-
-            if i_non in self.graph_dict:
-                diff_d = DiffusionAccProb3(self.graph_dict, self.seed_cost_dict, self.product_list)
-                i_non_dict = diff_d.getSeedSetNeighborProfit(s_set_k, i_non, i_non_prob)
-
-                for item in i_non_dict:
-                    if item in i_dict:
-                        i_dict[item] += i_non_dict[item]
-                    else:
-                        i_dict[item] = i_non_dict[item]
-
-        return i_dict
-
-    def getSeedSetProfit(self, s_set):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        ep = 0.0
-
-        diff_d = DiffusionAccProb3(self.graph_dict, self.seed_cost_dict, self.product_list)
-
-        for k in range(self.num_product):
-            s_dict = {}
-            for i in s_set_t[k]:
-                if i in self.graph_dict:
-                    i_dict = diff_d.getSeedSetNeighborProfit(s_set_t[k], i, '1')
-
-                    for item in i_dict:
-                        if item in s_dict:
-                            s_dict[item] += i_dict[item]
-                        else:
-                            s_dict[item] = i_dict[item]
-            for i in s_dict:
-                acc_prob = 1.0
-                for prob in s_dict[i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0])
-
-        return round(ep, 4)
-
-
-class DiffusionAccProb4:
-    def __init__(self, g_dict, s_c_dict, prod_list):
-        ### g_dict: (dict) the graph
-        ### s_c_dict: (dict) the set of cost for seeds
-        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### num_node: (int) the number of nodes
-        ### num_product: (int) the kinds of products
-        self.graph_dict = g_dict
-        self.seed_cost_dict = s_c_dict
-        self.product_list = prod_list
-        self.num_node = len(s_c_dict)
-        self.num_product = len(prod_list)
-        self.prob_threshold = 0.001
-
-    def getSeedSetNeighborProfit(self, union_seed_set, i_node, i_acc_prob, b_dict):
-        i_dict = {}
-
-        if i_node in b_dict and not list(set(union_seed_set).intersection(set(b_dict[i_node]))):
-            for item in b_dict[i_node]:
-                if item in union_seed_set:
-                    continue
-                for item_prob in b_dict[i_node][item]:
-                    item_acc_prob = str(round(float(item_prob) * float(i_acc_prob), 4))
-
-                    if float(item_acc_prob) < self.prob_threshold:
-                        continue
-                    if item in i_dict:
-                        i_dict[item].append(item_acc_prob)
-                    else:
-                        i_dict[item] = [item_acc_prob]
-        else:
-            for i_non in self.graph_dict[i_node]:
-                if i_non in union_seed_set:
-                    continue
-                i_non_prob = str(round(float(self.graph_dict[i_node][i_non]) * float(i_acc_prob), 4))
-
-                if float(i_non_prob) < self.prob_threshold:
-                    continue
-
-                if i_non not in i_dict:
-                    i_dict[i_non] = [i_non_prob]
-                elif i_non in i_dict:
-                    i_dict[i_non].append(i_non_prob)
-
-                if i_non in b_dict and not list(set(union_seed_set).intersection(set(b_dict[i_non]))):
-                    for item in b_dict[i_non]:
-                        if item in union_seed_set:
-                            continue
-                        for item_prob in b_dict[i_non][item]:
-                            item_acc_prob = str(round(float(item_prob) * float(i_non_prob), 4))
-
-                            if float(item_acc_prob) < 0.001:
-                                continue
-                            if item in i_dict:
-                                i_dict[item].append(item_acc_prob)
-                            else:
-                                i_dict[item] = [item_acc_prob]
-                else:
-                    if i_non in self.graph_dict:
-                        diff_d = DiffusionAccProb4(self.graph_dict, self.seed_cost_dict, self.product_list)
-                        i_non_dict = diff_d.getSeedSetNeighborProfit(union_seed_set, i_non, i_non_prob, b_dict)
-
-                        for item in i_non_dict:
-                            if item in i_dict:
-                                i_dict[item] += i_non_dict[item]
-                            else:
-                                i_dict[item] = i_non_dict[item]
-
-        return i_dict
-
-    def getSeedSetProfit(self, s_set, b_dict):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        union_seed_set = set()
-        for k in range(self.num_product):
-            union_seed_set = union_seed_set | s_set_t[k]
-        ep = 0.0
-
-        diff_d = DiffusionAccProb4(self.graph_dict, self.seed_cost_dict, self.product_list)
-
-        for k in range(self.num_product):
-            s_dict = {}
-            for i in s_set_t[k]:
-                if i in self.graph_dict:
-                    i_dict = diff_d.getSeedSetNeighborProfit(union_seed_set, i, '1', b_dict)
-
-                    if i not in b_dict:
-                        b_dict[i] = i_dict
-
-                    for item in i_dict:
-                        if item in s_dict:
-                            s_dict[item] += i_dict[item]
-                        else:
-                            s_dict[item] = i_dict[item]
-            for i in s_dict:
-                acc_prob = 1.0
-                for prob in s_dict[i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0])
-
-        return round(ep, 4), b_dict
-
-
-class DiffusionAccProb5:
-    def __init__(self, g_dict, s_c_dict, prod_list):
-        ### g_dict: (dict) the graph
-        ### s_c_dict: (dict) the set of cost for seeds
-        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### num_node: (int) the number of nodes
-        ### num_product: (int) the kinds of products
-        self.graph_dict = g_dict
-        self.seed_cost_dict = s_c_dict
-        self.product_list = prod_list
-        self.num_node = len(s_c_dict)
-        self.num_product = len(prod_list)
-        self.prob_threshold = 0.001
-
-    def buildNodeTree(self, seed, i_node, i_acc_prob):
-        i_tree, i_descendants = {}, []
-
-        if i_node in self.graph_dict:
-            diff_d = DiffusionAccProb5(self.graph_dict, self.seed_cost_dict, self.product_list)
-            for i_non in self.graph_dict[i_node]:
-                if i_non == seed:
-                    continue
-                i_non_prob = str(round(float(self.graph_dict[i_node][i_non]) * float(i_acc_prob), 4))
-                i_tree[i_non] = [i_non_prob, {}]
-                if i_non not in i_descendants:
-                    i_descendants.append(i_non)
-
-                if float(i_non_prob) > self.prob_threshold:
-                    i_non_tree, i_non_descendants = diff_d.buildNodeTree(seed, i_non, i_non_prob)
-                    i_tree[i_non][1] = i_non_tree
-
-                    for item in i_non_descendants:
-                        if item not in i_descendants:
-                            i_descendants.append(item)
-
-        return i_tree, i_descendants
-
-    def removeKIFromSITree(self, i_node, s_i_tree):
-        temp_s_i_tree = {}
-        diff_d = DiffusionAccProb5(self.graph_dict, self.seed_cost_dict, self.product_list)
-        for i in s_i_tree:
-            if i == i_node:
-                continue
-            else:
-                if len(s_i_tree[i][1]) == 0:
-                    temp_s_i_tree[i] = [s_i_tree[i][0], {}]
-                    continue
-                temp_s_i_tree[i] = [s_i_tree[i][0], diff_d.removeKIFromSITree(i_node, s_i_tree[i][1])]
-
-        return temp_s_i_tree
-
-    def removeSIFromKITree(self, s_set_k, k_i_tree):
-        temp_k_i_tree = {}
-        diff_d = DiffusionAccProb5(self.graph_dict, self.seed_cost_dict, self.product_list)
-        for i in k_i_tree:
-            if len(s_set_k.intersection(set(list(k_i_tree.keys())))) != 0:
-                for s in s_set_k:
-                    if s == i:
-                        continue
-            else:
-                if len(k_i_tree[i][1]) == 0:
-                    temp_k_i_tree[i] = [k_i_tree[i][0], {}]
-                    continue
-                temp_k_i_tree[i] = [k_i_tree[i][0], diff_d.removeKIFromSITree(s_set_k, k_i_tree[i][1])]
-
-        return temp_k_i_tree
-
-    def generateIDictUsingITree(self, i_tree):
-        i_dict = [{} for _ in range(self.num_product)]
-        for k in range(self.num_product):
-            for s in i_tree[k]:
-                for i in i_tree[k][s]:
-                    i_dict_seq = [[i, i_tree[k][s][i][0], i_tree[k][s][i][1]]]
-
-                    while len(i_dict_seq) != 0:
-                        # print(len(i_dict_seq))
-                        i_node, i_prob, i_subtree = i_dict_seq.pop()
-                        if i_node in i_dict[k]:
-                            i_dict[k][i_node].append(i_prob)
-                        else:
-                            i_dict[k][i_node] = [i_prob]
-
-                        for i in i_subtree:
-                            i_dict_seq.append([i, i_subtree[i][0], i_subtree[i][1]])
-
-        return i_dict, i_tree
-
-    @staticmethod
-    def getExpectedInfluence(i_tree):
-        i_dict = {}
-        i_dict_seq = []
-        for i in i_tree:
-            i_dict_seq.append([i, i_tree[i][0], i_tree[i][1]])
-
-        while len(i_dict_seq) != 0:
-            i_node, i_prob, i_subtree = i_dict_seq.pop(0)
-            if i_node in i_dict:
-                i_dict[i_node].append(i_prob)
-            else:
-                i_dict[i_node] = [i_prob]
-
-            for i in i_subtree:
-                i_dict_seq.append([i, i_subtree[i][0], i_subtree[i][1]])
-
-        ei = 0.0
-        for i in i_dict:
-            acc_prob = 1.0
-            for prob in i_dict[i]:
-                acc_prob *= (1 - float(prob))
-            ei += (1 - acc_prob)
-
-        return round(ei, 4)
-
-    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_tree, s_i_des, k_i_tree, k_i_des):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        temp_s_i_tree = s_i_tree
-        temp_s_i_des = s_i_des
-        temp_k_i_tree = [{} for _ in range(self.num_product)]
-        temp_k_i_tree[k_prod] = k_i_tree
-        temp_k_i_des = [[] for _ in range(self.num_product)]
-        temp_k_i_des[k_prod] = k_i_des
-        diff_d = DiffusionAccProb5(self.graph_dict, self.seed_cost_dict, self.product_list)
-
-        if i_node in s_i_des[k_prod]:
-            temp_s_i_tree, temp_s_i_des = [{} for _ in range(self.num_product)], [[] for _ in range(self.num_product)]
-            for k in range(self.num_product):
-                if k == k_prod:
-                    for i in s_i_tree[k_prod]:
-                        temp_s_i_tree[k][i] = diff_d.removeKIFromSITree(i_node, s_i_tree[k_prod][i])
-                else:
-                    temp_s_i_tree[k] = s_i_tree[k]
-                    temp_s_i_des[k] = s_i_des[k]
-
-        if len(s_set[k_prod].intersection(set(temp_k_i_des[k_prod]))) != 0:
-            temp_k_i_tree, temp_k_i_des = [{} for _ in range(self.num_product)], [[] for _ in range(self.num_product)]
-            for k in range(self.num_product):
-                if k == k_prod:
-                    for i in k_i_tree:
-                        temp_k_i_tree[k_prod][i] = diff_d.removeSIFromKITree(s_set[k_prod], k_i_tree[i])
-                else:
-                    temp_k_i_tree[k] = k_i_tree
-                    temp_k_i_des[k] = k_i_des
-
-        if len(temp_s_i_tree[k_prod]) == 0:
-            temp_s_i_tree[k_prod] = temp_k_i_tree[k_prod]
-        else:
-            temp_s_i_tree[k_prod][i_node] = temp_k_i_tree[k_prod][i_node]
-
-        # i_dict = [{} for _ in range(self.num_product)]
-        # i_tree = temp_s_i_tree
-        # for k in range(self.num_product):
-        #     for i in temp_s_i_tree[k]:
-        #         k_i_dict = diff_d.generateIDictUsingITree()
-        i_dict, i_tree = diff_d.generateIDictUsingITree(temp_s_i_tree)
-        del temp_s_i_tree, temp_s_i_des, temp_k_i_tree, temp_k_i_des
-        gc.collect()
-
-        ep = 0.0
-        for k in range(self.num_product):
-            for i in i_dict[k]:
-                acc_prob = 1.0
-                for prob in i_dict[k][i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0])
-
-        i_des = [[] for _ in range(self.num_product)]
-        for k in range(self.num_product):
-            for i in i_dict[k]:
-                i_des[k].append(i)
-
-        return round(ep, 4), i_tree, i_des
-
-
-class DiffusionAccProb6:
-    def __init__(self, g_dict, s_c_dict, prod_list):
-        ### g_dict: (dict) the graph
-        ### s_c_dict: (dict) the set of cost for seeds
-        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### num_node: (int) the number of nodes
-        ### num_product: (int) the kinds of products
-        self.graph_dict = g_dict
-        self.seed_cost_dict = s_c_dict
-        self.product_list = prod_list
-        self.num_node = len(s_c_dict)
-        self.num_product = len(prod_list)
         self.prob_threshold = 0.001
 
     def buildNodeTree(self, seed, i_node, i_acc_prob):
         i_tree, i_dict = {}, {}
 
         if i_node in self.graph_dict:
-            diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+            diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
             for i_non in self.graph_dict[i_node]:
                 if i_non == seed:
                     continue
                 i_non_prob = str(round(float(self.graph_dict[i_node][i_non]) * float(i_acc_prob), 4))
-                i_tree[i_non] = [i_non_prob, {}]
-                if i_non not in i_dict:
-                    i_dict[i_non] = [i_non_prob]
-                else:
-                    i_dict[i_non].append(i_non_prob)
 
-                if float(i_non_prob) > self.prob_threshold:
+                if float(i_non_prob) >= self.prob_threshold:
+                    i_tree[i_non] = [i_non_prob, {}]
+                    if i_non not in i_dict:
+                        i_dict[i_non] = [i_non_prob]
+                    else:
+                        i_dict[i_non].append(i_non_prob)
+
                     if i_non not in self.graph_dict:
                         continue
                     i_non_tree, i_non_dict = diff_d.buildNodeTree(seed, i_non, i_non_prob)
@@ -830,7 +248,7 @@ class DiffusionAccProb6:
 
     def removeNodeFromTree(self, i_node, s_i_tree):
         temp_s_i_tree = {}
-        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
         for i in s_i_tree:
             if i == i_node:
                 continue
@@ -861,7 +279,7 @@ class DiffusionAccProb6:
                                             temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], {}]
                                             continue
 
-                                        if i_node in diff_d.whetherNodeInTree(i_node, s_i_tree[i][1][ii][1][iii][1]):
+                                        if diff_d.whetherNodeInTree(i_node, s_i_tree[i][1][ii][1][iii][1]):
                                             temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], diff_d.removeNodeFromTree(i_node, s_i_tree[i][1][ii][1][iii][1])]
                                         else:
                                             temp_s_i_tree[i][1][ii][1][iii] = s_i_tree[i][1][ii][1][iii]
@@ -896,7 +314,7 @@ class DiffusionAccProb6:
         temp_s_i_tree = s_i_tree
         temp_k_i_tree = [{} for _ in range(self.num_product)]
         temp_k_i_tree[k_prod] = k_i_tree
-        diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         if diff_d.whetherNodeInTree(i_node, s_i_tree[k_prod]):
             temp_s_i_tree = [{} for _ in range(self.num_product)]
@@ -947,63 +365,48 @@ class DiffusionAccProbPW:
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.pw_list = pw_list
+        self.prob_threshold = 0.001
 
-    def getSeedSetProfit(self, s_set):
+    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_tree, k_i_tree):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        union_seed_set = set()
-        for k in range(self.num_product):
-            union_seed_set = union_seed_set | s_set_t[k]
+        temp_s_i_tree = s_i_tree
+        temp_k_i_tree = [{} for _ in range(self.num_product)]
+        temp_k_i_tree[k_prod] = k_i_tree
+        diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
+
+        if diff_d.whetherNodeInTree(i_node, s_i_tree[k_prod]):
+            temp_s_i_tree = [{} for _ in range(self.num_product)]
+            for k in range(self.num_product):
+                if k == k_prod:
+                    for i in s_i_tree[k_prod]:
+                        temp_s_i_tree[k_prod][i] = diff_d.removeNodeFromTree(i_node, s_i_tree[k_prod][i])
+                else:
+                    temp_s_i_tree[k] = s_i_tree[k]
+
+        for s in s_set[k_prod]:
+            if diff_d.whetherNodeInTree(s, k_i_tree):
+                temp_k_i_tree = [{} for _ in range(self.num_product)]
+                for i in k_i_tree:
+                    temp_k_i_tree[k_prod][i] = k_i_tree[i]
+                    for s_node in s_set[k_prod]:
+                        temp_k_i_tree[k_prod][i] = diff_d.removeNodeFromTree(s_node, temp_k_i_tree[k_prod][i])
+
+        if len(temp_s_i_tree[k_prod]) == 0:
+            temp_s_i_tree[k_prod] = temp_k_i_tree[k_prod]
+        else:
+            temp_s_i_tree[k_prod][i_node] = temp_k_i_tree[k_prod][i_node]
+
+        i_dict, i_tree = diff_d.generateIDictUsingITree(temp_s_i_tree)
+
         ep = 0.0
-
         for k in range(self.num_product):
-            i_dict = {}
-            for i in s_set_t[k]:
-                if i in self.graph_dict:
-                    for ii in self.graph_dict[i]:
-                        if ii in union_seed_set:
-                            continue
-                        ii_prob = self.graph_dict[i][ii]
-
-                        if ii not in i_dict:
-                            i_dict[ii] = [ii_prob]
-                        elif ii in i_dict:
-                            i_dict[ii].append(ii_prob)
-
-                        if ii not in self.graph_dict:
-                            continue
-
-                        for iii in self.graph_dict[ii]:
-                            if iii in union_seed_set:
-                                continue
-                            iii_prob = str(round(float(ii_prob) * float(self.graph_dict[ii][iii]), 4))
-
-                            if iii not in i_dict:
-                                i_dict[iii] = [iii_prob]
-                            elif iii in i_dict:
-                                i_dict[iii].append(iii_prob)
-
-                            if iii not in self.graph_dict:
-                                continue
-
-                            for iiii in self.graph_dict[iii]:
-                                if iiii in union_seed_set:
-                                    continue
-                                iiii_prob = str(round(float(iii_prob) * float(self.graph_dict[iii][iiii]), 4))
-
-                                if iiii not in i_dict:
-                                    i_dict[iiii] = [iiii_prob]
-                                elif iiii in i_dict:
-                                    i_dict[iiii].append(iiii_prob)
-
-            for i in i_dict:
+            for i in i_dict[k]:
                 acc_prob = 1.0
-                for prob in i_dict[i]:
+                for prob in i_dict[k][i]:
                     acc_prob *= (1 - float(prob))
                 ep += ((1 - acc_prob) * self.product_list[k][0] * self.pw_list[k])
 
-        return round(ep, 4)
+        return round(ep, 4), i_tree
 
 
 class Evaluation:
