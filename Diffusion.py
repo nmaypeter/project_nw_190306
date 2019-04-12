@@ -821,22 +821,14 @@ class DiffusionAccProb6:
 
     @staticmethod
     def whetherNodeInTree(i_node, i_tree):
-        i_tree_str = str(i_tree).replace('[\'1\',', '')
-        i_tree_str = str(i_tree_str).replace('\'', '')
-        i_tree_str = str(i_tree_str).replace('{', '')
-        i_tree_str = str(i_tree_str).replace('}', '')
-        i_tree_str = str(i_tree_str).replace('[', '')
-        i_tree_str = str(i_tree_str).replace(']', '')
-        i_tree_str = str(i_tree_str).replace(',', '')
-        i_tree_str = str(i_tree_str).replace(':', '')
-        i_tree_list = [int(i) for i in i_tree_str.split() if i.isdigit()]
-        i_tree_list = [str(i) for i in i_tree_list]
-        if i_node in i_tree_list:
-            return True
-        else:
-            return False
+        i_tree_str = str(i_tree).replace('[\'1\',', '').replace('\'', '').replace('{', '').replace('}', '').replace('[', '').replace(']', '').replace(',', '').replace(':', '')
+        for i in i_tree_str.split():
+            if i.isdigit():
+                if i == i_node:
+                    return True
+        return False
 
-    def removeKIFromSITree(self, i_node, s_i_tree):
+    def removeNodeFromTree(self, i_node, s_i_tree):
         temp_s_i_tree = {}
         diff_d = DiffusionAccProb6(self.graph_dict, self.seed_cost_dict, self.product_list)
         for i in s_i_tree:
@@ -870,15 +862,13 @@ class DiffusionAccProb6:
                                             continue
 
                                         if i_node in diff_d.whetherNodeInTree(i_node, s_i_tree[i][1][ii][1][iii][1]):
-                                            temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], diff_d.removeKIFromSITree(i_node, s_i_tree[i][1][ii][1][iii][1])]
+                                            temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], diff_d.removeNodeFromTree(i_node, s_i_tree[i][1][ii][1][iii][1])]
                                         else:
                                             temp_s_i_tree[i][1][ii][1][iii] = s_i_tree[i][1][ii][1][iii]
                             else:
                                 temp_s_i_tree[i][1][ii] = s_i_tree[i][1][ii]
                 else:
                     temp_s_i_tree[i] = s_i_tree[i]
-        del diff_d
-        gc.collect()
 
         return temp_s_i_tree
 
@@ -890,7 +880,6 @@ class DiffusionAccProb6:
                     i_dict_seq = [[i, i_tree[k][s][i][0], i_tree[k][s][i][1]]]
 
                     while len(i_dict_seq) != 0:
-                        # print(len(i_dict_seq))
                         i_node, i_prob, i_subtree = i_dict_seq.pop()
                         if i_node in i_dict[k]:
                             i_dict[k][i_node].append(i_prob)
@@ -914,7 +903,7 @@ class DiffusionAccProb6:
             for k in range(self.num_product):
                 if k == k_prod:
                     for i in s_i_tree[k_prod]:
-                        temp_s_i_tree[k_prod][i] = diff_d.removeKIFromSITree(i_node, s_i_tree[k_prod][i])
+                        temp_s_i_tree[k_prod][i] = diff_d.removeNodeFromTree(i_node, s_i_tree[k_prod][i])
                 else:
                     temp_s_i_tree[k] = s_i_tree[k]
 
@@ -924,7 +913,7 @@ class DiffusionAccProb6:
                 for i in k_i_tree:
                     temp_k_i_tree[k_prod][i] = k_i_tree[i]
                     for s_node in s_set[k_prod]:
-                        temp_k_i_tree[k_prod][i] = diff_d.removeKIFromSITree(s_node, temp_k_i_tree[k_prod][i])
+                        temp_k_i_tree[k_prod][i] = diff_d.removeNodeFromTree(s_node, temp_k_i_tree[k_prod][i])
 
         if len(temp_s_i_tree[k_prod]) == 0:
             temp_s_i_tree[k_prod] = temp_k_i_tree[k_prod]
@@ -940,9 +929,6 @@ class DiffusionAccProb6:
                 for prob in i_dict[k][i]:
                     acc_prob *= (1 - float(prob))
                 ep += ((1 - acc_prob) * self.product_list[k][0])
-
-        del temp_s_i_tree, temp_k_i_tree
-        gc.collect()
 
         return round(ep, 4), i_tree
 
