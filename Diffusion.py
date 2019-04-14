@@ -311,9 +311,9 @@ class DiffusionAccProb:
 
     def getExpectedProfit(self, k_prod, i_node, s_set, s_i_tree, k_i_tree):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        temp_s_i_tree = s_i_tree
+        temp_s_i_tree = copy.deepcopy(s_i_tree)
         temp_k_i_tree = [{} for _ in range(self.num_product)]
-        temp_k_i_tree[k_prod] = k_i_tree
+        temp_k_i_tree[k_prod] = copy.deepcopy(k_i_tree)
         diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         if diff_d.whetherNodeInTree(i_node, s_i_tree[k_prod]):
