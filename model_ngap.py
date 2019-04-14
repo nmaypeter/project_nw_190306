@@ -42,8 +42,7 @@ if __name__ == '__main__':
                                 seed_set = [set() for _ in range(num_product)]
                                 celf_sequence, i_tree_dict, app_now_s_i_tree = ssngap_main.generateCelfSequence()
                                 ss_acc_time = round(time.time() - ss_strat_time, 2)
-                                temp_sequence = [[begin_budget, now_budget, now_profit, app_now_profit, copy.deepcopy(now_s_i_tree), copy.deepcopy(seed_set),
-                                                  copy.deepcopy(celf_sequence), copy.deepcopy(app_now_s_i_tree), ss_acc_time]]
+                                temp_sequence = [[begin_budget, now_budget, now_profit, app_now_profit, now_s_i_tree, seed_set, celf_sequence, app_now_s_i_tree, ss_acc_time]]
                                 while len(temp_sequence) != 0:
                                     ss_strat_time = time.time()
                                     begin_budget, now_budget, now_profit, app_now_profit, now_s_i_tree, seed_set, celf_sequence, app_now_s_i_tree, ss_acc_time = temp_sequence.pop(0)
@@ -59,7 +58,7 @@ if __name__ == '__main__':
                                             temp_celf_sequence = copy.deepcopy(celf_sequence)
                                             temp_celf_sequence.insert(0, mep_g)
                                             temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(app_now_profit), copy.deepcopy(now_s_i_tree), copy.deepcopy(seed_set),
-                                                                  copy.deepcopy(temp_celf_sequence), copy.deepcopy(app_now_s_i_tree), ss_time])
+                                                                  temp_celf_sequence, app_now_s_i_tree, ss_time])
 
                                         if now_budget + sc > begin_budget:
                                             mep_g = celf_sequence.pop(0)
