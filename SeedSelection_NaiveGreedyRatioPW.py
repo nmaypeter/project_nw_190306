@@ -35,7 +35,7 @@ class SeedSelectionNGRPW:
 
             if temp_mg > 0:
                 for k in range(self.num_product):
-                    mg = round(temp_mg * self.product_list[k][0] * self.pw_list[k] / (self.product_list[0][0] * self.pw_list[0]), 4)
+                    mg = round(temp_mg * self.product_list[k][0] * self.pw_list[k] / self.seed_cost_dict[i], 4)
                     if self.seed_cost_dict[i] == 0:
                         break
                     else:
