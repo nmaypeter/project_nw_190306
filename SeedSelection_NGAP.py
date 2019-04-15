@@ -56,7 +56,7 @@ class SeedSelectionNGAP:
         diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         i_t_dict = {}
-        m_mg, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
+        m_mg_r, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
             i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
             i_t_dict[i] = {i: i_tree}
@@ -69,12 +69,12 @@ class SeedSelectionNGAP:
 
             if ei > 0:
                 for k in range(self.num_product):
-                    mg = round(ei * self.product_list[k][0] / self.seed_cost_dict[i], 4)
-                    if mg > m_mg:
-                        m_mg = mg
+                    mg_r = round(ei * self.product_list[k][0] / self.seed_cost_dict[i], 4)
+                    if mg_r > m_mg_r:
+                        m_mg_r = mg_r
                         m_s_i_tree = [{} for _ in range(self.num_product)]
                         m_s_i_tree[k] = i_t_dict[i]
-                    celf_ep = (k, i, mg, 0)
+                    celf_ep = (k, i, mg_r, 0)
                     celf_seq.append(celf_ep)
                     for celf_item in celf_seq:
                         if celf_ep[2] >= celf_item[2]:
@@ -142,7 +142,7 @@ class SeedSelectionNGAPPW:
         diffappw_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         i_t_dict = {}
-        m_mg, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
+        m_mg_r, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
             i_tree, i_dict = diffappw_ss.buildNodeTree(i, i, '1')
             i_t_dict[i] = {i: i_tree}
@@ -155,12 +155,12 @@ class SeedSelectionNGAPPW:
 
             if ei > 0:
                 for k in range(self.num_product):
-                    mg = round(ei * self.product_list[k][0] * self.pw_list[k] / self.seed_cost_dict[i], 4)
-                    if mg > m_mg:
-                        m_mg = mg
+                    mg_r = round(ei * self.product_list[k][0] * self.pw_list[k] / self.seed_cost_dict[i], 4)
+                    if mg_r > m_mg_r:
+                        m_mg_r = mg_r
                         m_s_i_tree = [{} for _ in range(self.num_product)]
                         m_s_i_tree[k] = i_t_dict[i]
-                    celf_ep = (k, i, mg, 0)
+                    celf_ep = (k, i, mg_r, 0)
                     celf_seq.append(celf_ep)
                     for celf_item in celf_seq:
                         if celf_ep[2] >= celf_item[2]:
