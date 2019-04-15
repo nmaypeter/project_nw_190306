@@ -146,9 +146,7 @@ class SeedSelectionNGAPPW:
         i_t_dict = {}
         m_mg_r, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
-            print(i)
             i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
-            print(i)
             i_t_dict[i] = {i: i_tree}
             ei = 0.0
             for item in i_dict:
