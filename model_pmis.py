@@ -34,9 +34,7 @@ if __name__ == '__main__':
                             sspmis_main = SeedSelectionPMIS(graph_dict, seed_cost_dict, product_list, monte_carlo)
                             diff_main = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
                             for sample_count in range(sample_number):
-                                s_matrix_sequence = [[[] for _ in range(num_product)] for _ in range(total_budget)]
-                                c_matrix_sequence = [[[] for _ in range(num_product)] for _ in range(total_budget)]
-                                ss_k_time_sequence = [0.0 for _ in range(total_budget)]
+                                s_matrix_sequence, c_matrix_sequence, ss_k_time_sequence = [], [], []
                                 celf_sequence = sspmis_main.generateCelfSequence()
                                 temp_sequence = [1, 0.0, 0.0, [[set() for _ in range(num_product)]], [0.0], celf_sequence]
                                 while temp_sequence[0] <= total_budget and len(celf_sequence) != 0:
@@ -105,13 +103,14 @@ if __name__ == '__main__':
                                         mep_k_prod, mep_i_node, mep_mg, mep_flag = mep
 
                                     s_matrix = [copy.deepcopy(s_matrix) for _ in range(num_product)]
+                                    c_matrix = [c_matrix for _ in range(num_product)]
                                     for kk in range(num_product):
                                         if kk != 0:
                                             for kk_item in s_matrix[kk]:
                                                 kk_item[0], kk_item[kk] = kk_item[kk], kk_item[0]
-                                        s_matrix_sequence[begin_budget - 1][kk] = s_matrix[kk]
-                                        c_matrix_sequence[begin_budget - 1][kk] = c_matrix
-                                    ss_k_time_sequence[begin_budget - 1] = round(time.time() - ss_strat_time, 2)
+                                    s_matrix_sequence.append(s_matrix)
+                                    c_matrix_sequence.append(c_matrix)
+                                    ss_k_time_sequence.append(round(time.time() - ss_strat_time, 2))
 
                                 for begin_budget in range(1, total_budget + 1):
                                     ss_strat_time = time.time()
@@ -125,7 +124,7 @@ if __name__ == '__main__':
                                     while not operator.eq(bud_index, bud_bound_index):
                                         bud_pmis = 0.0
                                         for kk in range(num_product):
-                                            bud_pmis += copy.deepcopy(c_matrix)[kk][bud_index[kk]]
+                                            bud_pmis += c_matrix[kk][bud_index[kk]]
 
                                         if bud_pmis <= begin_budget:
                                             temp_bound_index = copy.deepcopy(bud_index)
