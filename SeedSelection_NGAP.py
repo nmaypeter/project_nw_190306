@@ -146,7 +146,9 @@ class SeedSelectionNGAPPW:
         i_t_dict = {}
         m_mg_r, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
+            print(i)
             i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
+            print(i)
             i_t_dict[i] = {i: i_tree}
             ei = 0.0
             for item in i_dict:
@@ -191,10 +193,11 @@ if __name__ == '__main__':
     product_list = iniP.getProductList()
     num_node = len(seed_cost_dict)
     num_product = len(product_list)
+    product_weight_list = getProductWeight(product_list, distribution_type)
 
     # -- initialization for each budget --
     start_time = time.time()
-    ssngap = SeedSelectionNGAP(graph_dict, seed_cost_dict, product_list)
+    ssngap = SeedSelectionNGAPPW(graph_dict, seed_cost_dict, product_list, product_weight_list)
     diffap = DiffusionAccProb(graph_dict, seed_cost_dict, product_list)
 
     # -- initialization for each sample --
