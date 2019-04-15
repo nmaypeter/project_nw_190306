@@ -49,7 +49,7 @@ if __name__ == '__main__':
                                     print('@ mngapic seed selection @ data_set_name = ' + data_set_name + '_' + cas_model + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                           ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                     mep_g = celf_sequence.pop(0)
-                                    mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                    mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g
 
                                     while now_budget < begin_budget and mep_i_node != '-1':
                                         sc = seed_cost_dict[mep_i_node]
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
                                         if now_budget + sc > begin_budget:
                                             mep_g = celf_sequence.pop(0)
-                                            mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                            mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g
                                             if mep_i_node == '-1':
                                                 break
                                             continue
@@ -92,7 +92,7 @@ if __name__ == '__main__':
                                                         break
 
                                         mep_g = celf_sequence.pop(0)
-                                        mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+                                        mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g
 
                                     ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                     print('ss_time = ' + str(ss_time) + 'sec')
