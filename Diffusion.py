@@ -37,9 +37,10 @@ class Diffusion:
     def getSeedSetProfit(self, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
         ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        a_n_set = copy.deepcopy(s_set_t)
-        a_e_set = [{} for _ in range(self.num_product)]
+        a_n_set, a_e_set = [set() for _ in range(self.num_product)], [{} for _ in range(self.num_product)]
+        for k in range(self.num_product):
+            for item in s_set[k]:
+                a_n_set[k].add(item)
         ep = 0.0
 
         # -- insert the children of seeds into try_s_n_sequence --
@@ -47,7 +48,7 @@ class Diffusion:
         ### try_a_n_sequence: (list) the sequence to store the nodes may be activated for k-products [k, i, prob]
         try_s_n_sequence, try_a_n_sequence = [], []
         for k in range(self.num_product):
-            for i in s_set_t[k]:
+            for i in s_set[k]:
                 try_s_n_sequence.append([k, i])
 
         while len(try_s_n_sequence) > 0:
@@ -126,9 +127,10 @@ class DiffusionPW:
     def getSeedSetProfit(self, s_set):
         # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
         ### ep: (float2) the expected profit
-        s_set_t = copy.deepcopy(s_set)
-        a_n_set = copy.deepcopy(s_set_t)
-        a_e_set = [{} for _ in range(self.num_product)]
+        a_n_set, a_e_set = [set() for _ in range(self.num_product)], [{} for _ in range(self.num_product)]
+        for k in range(self.num_product):
+            for item in s_set[k]:
+                a_n_set[k].add(item)
         ep = 0.0
 
         # -- insert the children of seeds into try_s_n_sequence --
@@ -136,7 +138,7 @@ class DiffusionPW:
         ### try_a_n_sequence: (list) the sequence to store the nodes may be activated for k-products [k, i, prob]
         try_s_n_sequence, try_a_n_sequence = [], []
         for k in range(self.num_product):
-            for i in s_set_t[k]:
+            for i in s_set[k]:
                 try_s_n_sequence.append([k, i])
 
         while len(try_s_n_sequence) > 0:
