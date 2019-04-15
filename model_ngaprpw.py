@@ -38,15 +38,15 @@ if __name__ == '__main__':
                                 ss_strat_time = time.time()
                                 begin_budget = 1
                                 now_budget, now_profit = 0.0, 0.0
-                                app_now_profit = 0.0
+                                app_flag = 0.0
                                 now_s_i_tree = [{} for _ in range(num_product)]
                                 seed_set = [set() for _ in range(num_product)]
                                 celf_sequence, i_tree_dict, app_now_s_i_tree = ssngappw_main.generateCelfSequenceR()
                                 ss_acc_time = round(time.time() - ss_strat_time, 2)
-                                temp_sequence = [[begin_budget, now_budget, now_profit, app_now_profit, now_s_i_tree, seed_set, celf_sequence, app_now_s_i_tree, ss_acc_time]]
+                                temp_sequence = [[begin_budget, now_budget, now_profit, app_flag, now_s_i_tree, seed_set, celf_sequence, app_now_s_i_tree, ss_acc_time]]
                                 while len(temp_sequence) != 0:
                                     ss_strat_time = time.time()
-                                    begin_budget, now_budget, now_profit, app_now_profit, now_s_i_tree, seed_set, celf_sequence, app_now_s_i_tree, ss_acc_time = temp_sequence.pop(0)
+                                    begin_budget, now_budget, now_profit, app_flag, now_s_i_tree, seed_set, celf_sequence, app_now_s_i_tree, ss_acc_time = temp_sequence.pop(0)
                                     print('@ mngaprpwic seed selection @ data_set_name = ' + data_set_name + '_' + cas_model + ', dis = ' + str(distribution_type) + ', wpiwp = ' + str(wpiwp) +
                                           ', product_name = ' + product_name + ', budget = ' + str(begin_budget) + ', sample_count = ' + str(sample_count))
                                     mep_g = celf_sequence.pop(0)
@@ -58,7 +58,7 @@ if __name__ == '__main__':
                                             ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                             temp_celf_sequence = copy.deepcopy(celf_sequence)
                                             temp_celf_sequence.insert(0, mep_g)
-                                            temp_sequence.append([begin_budget + 1, now_budget, now_profit, copy.deepcopy(app_now_profit), copy.deepcopy(now_s_i_tree), copy.deepcopy(seed_set),
+                                            temp_sequence.append([begin_budget + 1, now_budget, now_profit, app_flag, copy.deepcopy(now_s_i_tree), copy.deepcopy(seed_set),
                                                                   temp_celf_sequence, app_now_s_i_tree, ss_time])
 
                                         if now_budget + sc > begin_budget:
@@ -73,7 +73,7 @@ if __name__ == '__main__':
                                             now_profit = round(now_profit + mep_ratio * seed_cost_dict[mep_i_node], 4)
                                             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
                                             now_s_i_tree = app_now_s_i_tree
-                                            app_now_profit = 0.0
+                                            app_flag = 0.0
                                             seed_set[mep_k_prod].add(mep_i_node)
                                         else:
                                             ep_g, s_i_tree_g = diffappw_main.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, i_tree_dict[mep_i_node])
@@ -83,8 +83,8 @@ if __name__ == '__main__':
                                             else:
                                                 mg_ratio_g = round(mg_g / seed_cost_dict[mep_i_node], 4)
                                             ep_flag = seed_set_length
-                                            if mg_ratio_g >= app_now_profit:
-                                                app_now_profit = mg_ratio_g
+                                            if mg_ratio_g >= app_flag:
+                                                app_flag = mg_ratio_g
                                                 app_now_s_i_tree = s_i_tree_g
 
                                             if mg_ratio_g > 0:
