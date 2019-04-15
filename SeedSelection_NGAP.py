@@ -58,7 +58,9 @@ class SeedSelectionNGAP:
         i_t_dict = {}
         m_mg_r, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
+            print(i)
             i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
+            print(i)
             i_t_dict[i] = {i: i_tree}
             ei = 0.0
             for item in i_dict:
@@ -104,12 +106,12 @@ class SeedSelectionNGAPPW:
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) (k_prod, i_node, mg, flag)
         celf_seq = [(-1, '-1', 0.0, 0)]
-        diffappw_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         i_t_dict = {}
         m_mg, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
-            i_tree, i_dict = diffappw_ss.buildNodeTree(i, i, '1')
+            i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
             i_t_dict[i] = {i: i_tree}
             ei = 0.0
             for item in i_dict:
@@ -139,12 +141,12 @@ class SeedSelectionNGAPPW:
         # -- calculate expected profit for all combinations of nodes and products --
         ### celf_ep: (list) (k_prod, i_node, mg, flag)
         celf_seq = [(-1, '-1', 0.0, 0)]
-        diffappw_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
+        diffap_ss = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
 
         i_t_dict = {}
         m_mg_r, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
-            i_tree, i_dict = diffappw_ss.buildNodeTree(i, i, '1')
+            i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
             i_t_dict[i] = {i: i_tree}
             ei = 0.0
             for item in i_dict:
@@ -197,39 +199,46 @@ if __name__ == '__main__':
 
     # -- initialization for each sample --
     now_budget, now_profit = 0.0, 0.0
-    app_now_profit = 0.0
+    app_flag = 0.0
     now_s_i_tree = [{} for _ in range(num_product)]
     seed_set = [set() for _ in range(num_product)]
 
-    celf_sequence, i_tree_dict, app_now_s_i_tree = ssngap.generateCelfSequence()
+    celf_sequence, i_tree_dict, app_now_s_i_tree = ssngap.generateCelfSequenceR()
     mep_g = celf_sequence.pop(0)
-    mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+    mep_k_prod, mep_i_node, mep_ratio, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+    print(round(time.time() - start_time, 4))
 
     while now_budget < total_budget and mep_i_node != '-1':
         if now_budget + seed_cost_dict[mep_i_node] > total_budget:
             mep_g = celf_sequence.pop(0)
-            mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+            mep_k_prod, mep_i_node, mep_ratio, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
             if mep_i_node == '-1':
                 break
             continue
 
+        print(round(time.time() - start_time, 4), mep_g[:4])
         seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
         if mep_flag == seed_set_length:
-            now_profit = round(now_profit + mep_profit, 4)
+            now_profit = round(now_profit + mep_ratio * seed_cost_dict[mep_i_node], 4)
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
             now_s_i_tree = app_now_s_i_tree
-            app_now_profit = 0.0
+            app_flag = 0.0
             seed_set[mep_k_prod].add(mep_i_node)
+            print(round(time.time() - start_time, 4), now_budget, now_profit, seed_set)
         else:
             ep_g, s_i_tree_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, i_tree_dict[mep_i_node])
             mg_g = round(ep_g - now_profit, 4)
+            if seed_cost_dict[mep_i_node] == 0:
+                mg_ratio_g = 0
+            else:
+                mg_ratio_g = round(mg_g / seed_cost_dict[mep_i_node], 4)
             ep_flag = seed_set_length
-            if mg_g >= app_now_profit:
-                app_now_profit = mg_g
+            if mg_ratio_g >= app_flag:
+                app_flag = mg_ratio_g
                 app_now_s_i_tree = s_i_tree_g
 
-            if mg_g > 0:
-                celf_ep_g = (mep_k_prod, mep_i_node, mg_g, ep_flag)
+            if mg_ratio_g > 0:
+                celf_ep_g = (mep_k_prod, mep_i_node, mg_ratio_g, ep_flag)
                 celf_sequence.append(celf_ep_g)
                 for celf_item_g in celf_sequence:
                     if celf_ep_g[2] >= celf_item_g[2]:
@@ -238,7 +247,7 @@ if __name__ == '__main__':
                         break
 
         mep_g = celf_sequence.pop(0)
-        mep_k_prod, mep_i_node, mep_profit, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
+        mep_k_prod, mep_i_node, mep_ratio, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
 
     eva = Evaluation(graph_dict, seed_cost_dict, product_list, pp_strategy, whether_passing_information_without_purchasing)
     iniW = IniWallet(data_set_name, product_name, distribution_type)
