@@ -135,7 +135,7 @@ if __name__ == '__main__':
         ### bud_pmis: (float) the budget in this pmis execution
         bud_pmis = 0.0
         for kk in range(num_product):
-            bud_pmis += copy.deepcopy(c_matrix)[kk][bud_index[kk]]
+            bud_pmis += c_matrix[kk][bud_index[kk]]
 
         if bud_pmis <= total_budget:
             temp_bound_index = copy.deepcopy(bud_index)
