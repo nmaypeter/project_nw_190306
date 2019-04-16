@@ -112,6 +112,11 @@ if __name__ == '__main__':
                                     c_matrix_sequence.append(c_matrix)
                                     ss_k_time_sequence.append(round(time.time() - ss_strat_time, 2))
 
+                                while len(s_matrix_sequence) != total_budget:
+                                    s_matrix_sequence.append(s_matrix_sequence[-1])
+                                    c_matrix_sequence.append(c_matrix_sequence[-1])
+                                    ss_k_time_sequence.append(ss_k_time_sequence[-1])
+
                                 for begin_budget in range(1, total_budget + 1):
                                     ss_strat_time = time.time()
                                     s_matrix = copy.deepcopy(s_matrix_sequence[begin_budget - 1])
@@ -131,7 +136,7 @@ if __name__ == '__main__':
                                             # -- pmis execution --
                                             seed_set = [set() for _ in range(num_product)]
                                             for kk in range(num_product):
-                                                seed_set[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
+                                                seed_set[kk] = s_matrix[kk][bud_index[kk]][kk]
 
                                             pro_acc = 0.0
                                             for _ in range(monte_carlo):
