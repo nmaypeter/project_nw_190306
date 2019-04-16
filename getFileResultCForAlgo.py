@@ -1,5 +1,5 @@
 ctl_seq = [0, 1, 2, 3]
-data_setting_seq = [1]
+data_setting_seq = [1, 2]
 cm_seq = [1, 2]
 model_kinds = 4
 pps_seq = [1, 2, 3]
