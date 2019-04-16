@@ -121,7 +121,7 @@ class DiffusionPW:
         self.num_node = len(s_c_dict)
         self.num_product = len(prod_list)
         self.pw_list = pw_list
-        self.prob_threshold = 0.0001
+        self.prob_threshold = 0.001
         self.monte = monte
 
     def getSeedSetProfit(self, s_set):
