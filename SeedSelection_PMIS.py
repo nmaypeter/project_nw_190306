@@ -142,7 +142,7 @@ if __name__ == '__main__':
             # -- pmis execution --
             seed_set = [set() for _ in range(num_product)]
             for kk in range(num_product):
-                seed_set[kk] = copy.deepcopy(s_matrix)[kk][bud_index[kk]][kk]
+                seed_set[kk] = s_matrix[kk][bud_index[kk]][kk]
 
             pro_acc = 0.0
             for _ in range(monte_carlo):
