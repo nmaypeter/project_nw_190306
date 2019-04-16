@@ -71,7 +71,10 @@ class SeedSelectionNGAP:
 
             if ei > 0:
                 for k in range(self.num_product):
-                    mg_r = round(ei * self.product_list[k][0] / self.seed_cost_dict[i], 4)
+                    if self.seed_cost_dict[i] == 0:
+                        break
+                    else:
+                        mg_r = round(ei * self.product_list[k][0] / self.seed_cost_dict[i], 4)
                     if mg_r > m_mg_r:
                         m_mg_r = mg_r
                         m_s_i_tree = [{} for _ in range(self.num_product)]
@@ -157,7 +160,10 @@ class SeedSelectionNGAPPW:
 
             if ei > 0:
                 for k in range(self.num_product):
-                    mg_r = round(ei * self.product_list[k][0] * self.pw_list[k] / self.seed_cost_dict[i], 4)
+                    if self.seed_cost_dict[i] == 0:
+                        break
+                    else:
+                        mg_r = round(ei * self.product_list[k][0] * self.pw_list[k] / self.seed_cost_dict[i], 4)
                     if mg_r > m_mg_r:
                         m_mg_r = mg_r
                         m_s_i_tree = [{} for _ in range(self.num_product)]
