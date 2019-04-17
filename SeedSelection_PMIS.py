@@ -19,7 +19,7 @@ class SeedSelectionPMIS:
 
     def generateCelfSequence(self):
         # -- calculate expected profit for all combinations of nodes and products --
-        ### celf_ep: (list) [k_prod, i_node, mg, flag]
+        ### celf_ep: (list) (k_prod, i_node, mg, flag)
         celf_seq = [(-1, '-1', 0.0, 0)]
 
         diff_ss = Diffusion(self.graph_dict, self.seed_cost_dict, self.product_list, self.monte)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     diff = Diffusion(graph_dict, seed_cost_dict, product_list, monte_carlo)
 
     # -- initialization for each sample_number --
-    cur_budget, cur_profit = 0.0, 0.0
+    now_budget, now_profit = 0.0, 0.0
     s_matrix, c_matrix = [[set() for _ in range(num_product)]], [0.0]
     celf_sequence = sspmis.generateCelfSequence()
     seed_set_pmis = [set() for _ in range(num_product)]
@@ -77,8 +77,8 @@ if __name__ == '__main__':
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
 
-    while cur_budget < total_budget and mep_i_node != '-1':
-        if cur_budget + seed_cost_dict[mep_i_node] > total_budget:
+    while now_budget < total_budget and mep_i_node != '-1':
+        if now_budget + seed_cost_dict[mep_i_node] > total_budget:
             mep_g = celf_sequence.pop(0)
             mep_k_prod, mep_i_node, mep_flag = mep_g[0], mep_g[1], mep_g[3]
             if mep_i_node == '-1':
@@ -91,10 +91,10 @@ if __name__ == '__main__':
             ep_g = 0.0
             for _ in range(monte_carlo):
                 ep_g += diff.getSeedSetProfit(seed_set_pmis)
-            cur_profit = round(ep_g / monte_carlo, 4)
-            cur_budget = round(cur_budget + seed_cost_dict[mep_i_node], 2)
+            now_profit = round(ep_g / monte_carlo, 4)
+            now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
             s_matrix.append(copy.deepcopy(seed_set_pmis))
-            c_matrix.append(round(cur_budget, 2))
+            c_matrix.append(now_budget)
         else:
             seed_set_t = copy.deepcopy(seed_set_pmis)
             seed_set_t[mep_k_prod].add(mep_i_node)
@@ -102,7 +102,7 @@ if __name__ == '__main__':
             for _ in range(monte_carlo):
                 ep_g += diff.getSeedSetProfit(seed_set_t)
             ep_g = round(ep_g / monte_carlo, 4)
-            mep_mg = round(ep_g - cur_profit, 4)
+            mep_mg = round(ep_g - now_profit, 4)
             mep_flag = seed_set_length
 
             if mep_mg > 0:
@@ -131,6 +131,7 @@ if __name__ == '__main__':
     ### temp_bound_index: (list) the bound to exclude the impossible budget combination s.t. the k-budget is smaller than the temp bound
     temp_bound_index = [0 for _ in range(num_product)]
 
+    print('seed selection time: ' + str(round(time.time() - start_time, 2)) + 'sec')
     while not operator.eq(bud_index, bud_bound_index):
         ### bud_pmis: (float) the budget in this pmis execution
         bud_pmis = 0.0
