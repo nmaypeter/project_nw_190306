@@ -30,7 +30,7 @@ if __name__ == '__main__':
                             num_node = len(seed_cost_dict)
                             num_product = len(product_list)
 
-                            seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
+                            seed_set_sequence, ss_time_sequence = [], []
                             sshd_main = SeedSelectionHD(graph_dict, seed_cost_dict, product_list)
                             for sample_count in range(sample_number):
                                 ss_strat_time = time.time()
@@ -75,8 +75,12 @@ if __name__ == '__main__':
 
                                     ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                     print('ss_time = ' + str(ss_time) + 'sec')
-                                    seed_set_sequence[begin_budget - 1].append(copy.deepcopy(seed_set))
-                                    ss_time_sequence[begin_budget - 1].append(ss_time)
+                                    seed_set_sequence.append(copy.deepcopy(seed_set))
+                                    ss_time_sequence.append(ss_time)
+
+                            while len(seed_set_sequence) != total_budget:
+                                seed_set_sequence.append(seed_set_sequence[-1])
+                                ss_time_sequence.append(ss_time_sequence[-1])
 
                             eva_start_time = time.time()
                             for bud in range(1, total_budget + 1):
