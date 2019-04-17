@@ -58,9 +58,7 @@ class SeedSelectionNGAP:
         i_t_dict = {}
         m_mg_r, m_s_i_tree = 0.0, [{} for _ in range(self.num_product)]
         for i in self.graph_dict:
-            print(i)
             i_tree, i_dict = diffap_ss.buildNodeTree(i, i, '1')
-            print(i)
             i_t_dict[i] = {i: i_tree}
             ei = 0.0
             for item in i_dict:
@@ -201,8 +199,8 @@ if __name__ == '__main__':
 
     # -- initialization for each budget --
     start_time = time.time()
-    ssngap = SeedSelectionNGAPPW(graph_dict, seed_cost_dict, product_list, product_weight_list)
-    diffap = DiffusionAccProb(graph_dict, seed_cost_dict, product_list)
+    ssngappw = SeedSelectionNGAPPW(graph_dict, seed_cost_dict, product_list, product_weight_list)
+    diffappw = DiffusionAccProbPW(graph_dict, seed_cost_dict, product_list, product_weight_list)
 
     # -- initialization for each sample --
     now_budget, now_profit = 0.0, 0.0
@@ -210,7 +208,7 @@ if __name__ == '__main__':
     now_s_i_tree = [{} for _ in range(num_product)]
     seed_set = [set() for _ in range(num_product)]
 
-    celf_sequence, i_tree_dict, app_now_s_i_tree = ssngap.generateCelfSequenceR()
+    celf_sequence, i_tree_dict, app_now_s_i_tree = ssngappw.generateCelfSequenceR()
     mep_g = celf_sequence.pop(0)
     mep_k_prod, mep_i_node, mep_ratio, mep_flag = mep_g[0], mep_g[1], mep_g[2], mep_g[3]
     print(round(time.time() - start_time, 4))
@@ -223,9 +221,9 @@ if __name__ == '__main__':
                 break
             continue
 
-        print(round(time.time() - start_time, 4), mep_g[:4])
         seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
         if mep_flag == seed_set_length:
+            print(len(celf_sequence), mep_g)
             now_profit = round(now_profit + mep_ratio * seed_cost_dict[mep_i_node], 4)
             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
             now_s_i_tree = app_now_s_i_tree
@@ -233,7 +231,7 @@ if __name__ == '__main__':
             seed_set[mep_k_prod].add(mep_i_node)
             print(round(time.time() - start_time, 4), now_budget, now_profit, seed_set)
         else:
-            ep_g, s_i_tree_g = diffap.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, i_tree_dict[mep_i_node])
+            ep_g, s_i_tree_g = diffappw.getExpectedProfit(mep_k_prod, mep_i_node, seed_set, now_s_i_tree, i_tree_dict[mep_i_node])
             mg_g = round(ep_g - now_profit, 4)
             if seed_cost_dict[mep_i_node] == 0:
                 mg_ratio_g = 0
