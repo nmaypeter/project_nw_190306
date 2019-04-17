@@ -31,7 +31,7 @@ if __name__ == '__main__':
                             num_product = len(product_list)
                             product_weight_list = getProductWeight(product_list, distribution_type)
 
-                            seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
+                            seed_set_sequence, ss_time_sequence = [], []
                             ssngpw_main = SeedSelectionNGPW(graph_dict, seed_cost_dict, product_list, product_weight_list, monte_carlo)
                             diffpw_main = DiffusionPW(graph_dict, seed_cost_dict, product_list, product_weight_list, monte_carlo)
                             for sample_count in range(sample_number):
@@ -81,7 +81,6 @@ if __name__ == '__main__':
                                             ep_g = round(ep_g / monte_carlo, 4)
                                             mg_g = round(ep_g - now_profit, 4)
                                             ep_flag = seed_set_length
-                                            del seed_set_t
 
                                             if mg_g > 0:
                                                 celf_ep_g = (mep_k_prod, mep_i_node, mg_g, ep_flag)
@@ -97,8 +96,12 @@ if __name__ == '__main__':
 
                                     ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                     print('ss_time = ' + str(ss_time) + 'sec')
-                                    seed_set_sequence[begin_budget - 1].append(copy.deepcopy(seed_set))
-                                    ss_time_sequence[begin_budget - 1].append(ss_time)
+                                    seed_set_sequence.append(copy.deepcopy(seed_set))
+                                    ss_time_sequence.append(ss_time)
+
+                            while len(seed_set_sequence) != total_budget:
+                                seed_set_sequence.append(seed_set_sequence[-1])
+                                ss_time_sequence.append(ss_time_sequence[-1])
 
                             eva_start_time = time.time()
                             for bud in range(1, total_budget + 1):
