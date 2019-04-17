@@ -31,7 +31,7 @@ if __name__ == '__main__':
                             num_product = len(product_list)
                             product_weight_list = getProductWeight(product_list, distribution_type)
 
-                            seed_set_sequence, ss_time_sequence = [], []
+                            seed_set_sequence, ss_time_sequence = [[] for _ in range(total_budget)], [[] for _ in range(total_budget)]
                             sshdpw_main = SeedSelectionHDPW(graph_dict, seed_cost_dict, product_list, product_weight_list)
                             for sample_count in range(sample_number):
                                 ss_strat_time = time.time()
@@ -76,12 +76,13 @@ if __name__ == '__main__':
 
                                     ss_time = round(time.time() - ss_strat_time + ss_acc_time, 2)
                                     print('ss_time = ' + str(ss_time) + 'sec')
-                                    seed_set_sequence.append(copy.deepcopy(seed_set))
-                                    ss_time_sequence.append(ss_time)
+                                    seed_set_sequence[begin_budget - 1].append(seed_set)
+                                    ss_time_sequence[begin_budget - 1].append(ss_time)
 
-                            while len(seed_set_sequence) != total_budget:
-                                seed_set_sequence.append(seed_set_sequence[-1])
-                                ss_time_sequence.append(ss_time_sequence[-1])
+                                for bud in range(total_budget):
+                                    if len(seed_set_sequence[bud]) != sample_count + 1:
+                                        seed_set_sequence[bud].append(seed_set_sequence[bud - 1][-1])
+                                        ss_time_sequence[bud].append(ss_time_sequence[bud - 1][-1])
 
                             eva_start_time = time.time()
                             for bud in range(1, total_budget + 1):
