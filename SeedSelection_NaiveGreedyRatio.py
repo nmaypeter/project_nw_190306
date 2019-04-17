@@ -29,14 +29,14 @@ class SeedSelectionNGR:
             ep = 0.0
             for _ in range(self.monte):
                 ep += diff_ss.getSeedSetProfit(s_set)
-            temp_mg = round(ep / self.monte, 4)
+            ep = round(ep / self.monte, 4)
 
-            if temp_mg > 0:
+            if ep > 0:
                 for k in range(self.num_product):
                     if self.seed_cost_dict[i] == 0:
                         break
                     else:
-                        mg = round(temp_mg * self.product_list[k][0] / self.product_list[0][0], 4)
+                        mg = round(ep * self.product_list[k][0] / self.product_list[0][0], 4)
                         mg_ratio = round(mg / self.seed_cost_dict[i], 4)
                     celf_ep = [k, i, mg_ratio, 0]
                     celf_seq.append(celf_ep)
@@ -104,10 +104,10 @@ if __name__ == '__main__':
             for _ in range(monte_carlo):
                 ep_g += diff.getSeedSetProfit(seed_set_t)
             ep_g = round(ep_g / monte_carlo, 4)
-            mg_g = round(ep_g - now_profit, 4)
             if seed_cost_dict[mep_i_node] == 0:
-                mg_ratio_g = 0
+                break
             else:
+                mg_g = round(ep_g - now_profit, 4)
                 mg_ratio_g = round(mg_g / seed_cost_dict[mep_i_node], 4)
             ep_flag = seed_set_length
 
