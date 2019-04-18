@@ -139,19 +139,24 @@ if __name__ == '__main__':
             bud_pmis += c_matrix[kk][bud_index[kk]]
 
         if bud_pmis <= total_budget:
-            temp_bound_index = copy.deepcopy(bud_index)
-            # -- pmis execution --
-            seed_set = [set() for _ in range(num_product)]
+            temp_bound_flag = 0
             for kk in range(num_product):
-                seed_set[kk] = s_matrix[kk][bud_index[kk]][kk]
+                if temp_bound_index[kk] >= bud_index[kk]:
+                    temp_bound_flag += 1
+            if temp_bound_flag != num_product:
+                temp_bound_index = copy.deepcopy(bud_index)
+                # -- pmis execution --
+                seed_set = [set() for _ in range(num_product)]
+                for kk in range(num_product):
+                    seed_set[kk] = s_matrix[kk][bud_index[kk]][kk]
 
-            pro_acc = 0.0
-            for _ in range(monte_carlo):
-                pro_acc += diff.getSeedSetProfit(seed_set)
-            pro_acc = round(pro_acc / monte_carlo, 4)
+                pro_acc = 0.0
+                for _ in range(monte_carlo):
+                    pro_acc += diff.getSeedSetProfit(seed_set)
+                pro_acc = round(pro_acc / monte_carlo, 4)
 
-            if pro_acc > mep_result[0]:
-                mep_result = [pro_acc, seed_set]
+                if pro_acc > mep_result[0]:
+                    mep_result = [pro_acc, seed_set]
 
         pointer = num_product - 1
         while bud_index[pointer] == bud_bound_index[pointer]:
