@@ -210,205 +210,66 @@ class DiffusionAccProb:
         self.num_product = len(prod_list)
         self.prob_threshold = 0.001
 
-    def buildNodeTree(self, seed, i_node, i_acc_prob):
-        i_tree, i_dict = {}, {}
+    def buildNodeDict(self, s_set, i_node, i_acc_prob):
+        i_dict = {}
 
         if i_node in self.graph_dict:
-            diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
-            for i_non in self.graph_dict[i_node]:
-                if i_non == seed:
+            for ii in self.graph_dict[i_node]:
+                if ii in s_set:
                     continue
-                i_non_prob = str(round(float(self.graph_dict[i_node][i_non]) * float(i_acc_prob), 4))
+                ii_prob = round(float(self.graph_dict[i_node][ii]) * i_acc_prob, 4)
 
-                if float(i_non_prob) >= self.prob_threshold:
-                    i_tree[i_non] = [i_non_prob, {}]
-                    if i_non not in i_dict:
-                        i_dict[i_non] = [i_non_prob]
+                if ii_prob >= self.prob_threshold:
+                    if ii not in i_dict:
+                        i_dict[ii] = [ii_prob]
                     else:
-                        i_dict[i_non].append(i_non_prob)
+                        i_dict[ii].append(ii_prob)
 
-                    if i_non not in self.graph_dict:
-                        continue
-                    i_non_tree, i_non_dict = diff_d.buildNodeTree(seed, i_non, i_non_prob)
-                    i_tree[i_non][1] = i_non_tree
-                    for item in i_non_dict:
-                        if item not in i_dict:
-                            i_dict[item] = i_non_dict[item]
-                        else:
-                            i_dict[item] += i_non_dict[item]
+                    if ii in self.graph_dict:
+                        for iii in self.graph_dict[ii]:
+                            if iii in s_set:
+                                continue
+                            iii_prob = round(float(self.graph_dict[ii][iii]) * ii_prob, 4)
 
-        return i_tree, i_dict
+                            if iii_prob >= self.prob_threshold:
+                                if iii not in i_dict:
+                                    i_dict[iii] = [iii_prob]
+                                else:
+                                    i_dict[iii].append(iii_prob)
+
+                                if iii in self.graph_dict:
+                                    for iiii in self.graph_dict[iii]:
+                                        if iiii in s_set:
+                                            continue
+                                        iiii_prob = round(float(self.graph_dict[iii][iiii]) * iii_prob, 4)
+
+                                        if iiii_prob >= self.prob_threshold:
+                                            if iiii not in i_dict:
+                                                i_dict[iiii] = [iiii_prob]
+                                            else:
+                                                i_dict[iiii].append(iiii_prob)
+
+                                            if iiii in self.graph_dict and iiii_prob > self.prob_threshold:
+                                                diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
+                                                iiii_dict = diff_d.buildNodeDict(s_set, iiii, iiii_prob)
+                                                for item in iiii_dict:
+                                                    if item not in i_dict:
+                                                        i_dict[item] = iiii_dict[item]
+                                                    else:
+                                                        i_dict[item] += iiii_dict[item]
+
+        return i_dict
 
     @staticmethod
-    def whetherNodeInTree(i_node, i_tree):
-        i_tree_str = str(i_tree).replace('[\'1\',', '').replace('\'', '').replace('{', '').replace('}', '').replace('[', '').replace(']', '').replace(',', '').replace(':', '')
-        for i in i_tree_str.split():
-            if i.isdigit():
-                if i == i_node:
-                    return True
-        return False
+    def getExpectedInf(i_dict):
+        ei = 0.0
+        for item in i_dict:
+            acc_prob = 1.0
+            for prob in i_dict[item]:
+                acc_prob *= (1 - prob)
+            ei += (1 - acc_prob)
 
-    def removeNodeFromTree(self, i_node, s_i_tree):
-        temp_s_i_tree = {}
-        diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
-        for i in s_i_tree:
-            if i == i_node:
-                continue
-            else:
-                if len(s_i_tree[i][1]) == 0:
-                    temp_s_i_tree[i] = [s_i_tree[i][0], {}]
-                    continue
-
-                if diff_d.whetherNodeInTree(i_node, s_i_tree[i][1]):
-                    if i not in temp_s_i_tree:
-                        temp_s_i_tree[i] = [s_i_tree[i][0], {}]
-                    for ii in s_i_tree[i][1]:
-                        if ii == i_node:
-                            continue
-                        else:
-                            if len(s_i_tree[i][1][ii][1]) == 0:
-                                temp_s_i_tree[i][1][ii] = [s_i_tree[i][1][ii][0], {}]
-                                continue
-
-                            if diff_d.whetherNodeInTree(i_node, s_i_tree[i][1][ii][1]):
-                                if ii not in temp_s_i_tree[i]:
-                                    temp_s_i_tree[i][1][ii] = [s_i_tree[i][1][ii][0], {}]
-                                for iii in s_i_tree[i][1][ii][1]:
-                                    if iii == i_node:
-                                        continue
-                                    else:
-                                        if len(s_i_tree[i][1][ii][1][iii][1]) == 0:
-                                            temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], {}]
-                                            continue
-
-                                        if diff_d.whetherNodeInTree(i_node, s_i_tree[i][1][ii][1][iii][1]):
-                                            temp_s_i_tree[i][1][ii][1][iii] = [s_i_tree[i][1][ii][1][iii][0], diff_d.removeNodeFromTree(i_node, s_i_tree[i][1][ii][1][iii][1])]
-                                        else:
-                                            temp_s_i_tree[i][1][ii][1][iii] = s_i_tree[i][1][ii][1][iii]
-                            else:
-                                temp_s_i_tree[i][1][ii] = s_i_tree[i][1][ii]
-                else:
-                    temp_s_i_tree[i] = s_i_tree[i]
-
-        return temp_s_i_tree
-
-    def generateIDictUsingITree(self, i_tree):
-        i_dict = [{} for _ in range(self.num_product)]
-        for k in range(self.num_product):
-            for s in i_tree[k]:
-                for i in i_tree[k][s]:
-                    i_dict_seq = [[i, i_tree[k][s][i][0], i_tree[k][s][i][1]]]
-
-                    while len(i_dict_seq) != 0:
-                        i_node, i_prob, i_subtree = i_dict_seq.pop()
-                        if i_node in i_dict[k]:
-                            i_dict[k][i_node].append(i_prob)
-                        else:
-                            i_dict[k][i_node] = [i_prob]
-
-                        for i_n in i_subtree:
-                            i_dict_seq.append([i_n, i_subtree[i_n][0], i_subtree[i_n][1]])
-
-        return i_dict, i_tree
-
-    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_tree, k_i_tree):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        temp_s_i_tree = copy.deepcopy(s_i_tree)
-        temp_k_i_tree = [{} for _ in range(self.num_product)]
-        temp_k_i_tree[k_prod] = k_i_tree
-        diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
-
-        if diff_d.whetherNodeInTree(i_node, s_i_tree[k_prod]):
-            temp_s_i_tree = [{} for _ in range(self.num_product)]
-            for k in range(self.num_product):
-                if k == k_prod:
-                    for i in s_i_tree[k_prod]:
-                        temp_s_i_tree[k_prod][i] = diff_d.removeNodeFromTree(i_node, s_i_tree[k_prod][i])
-                else:
-                    temp_s_i_tree[k] = s_i_tree[k]
-
-        for s in s_set[k_prod]:
-            if diff_d.whetherNodeInTree(s, k_i_tree):
-                temp_k_i_tree = [{} for _ in range(self.num_product)]
-                for i in k_i_tree:
-                    temp_k_i_tree[k_prod][i] = k_i_tree[i]
-                    for s_node in s_set[k_prod]:
-                        temp_k_i_tree[k_prod][i] = diff_d.removeNodeFromTree(s_node, temp_k_i_tree[k_prod][i])
-
-        if len(temp_s_i_tree[k_prod]) == 0:
-            temp_s_i_tree[k_prod] = temp_k_i_tree[k_prod]
-        else:
-            temp_s_i_tree[k_prod][i_node] = temp_k_i_tree[k_prod][i_node]
-
-        i_dict, i_tree = diff_d.generateIDictUsingITree(temp_s_i_tree)
-
-        ep = 0.0
-        for k in range(self.num_product):
-            for i in i_dict[k]:
-                acc_prob = 1.0
-                for prob in i_dict[k][i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0])
-
-        return round(ep, 4), i_tree
-
-
-class DiffusionAccProbPW:
-    def __init__(self, g_dict, s_c_dict, prod_list, pw_list):
-        ### g_dict: (dict) the graph
-        ### s_c_dict: (dict) the set of cost for seeds
-        ### prod_list: (list) the set to record products [kk's profit, kk's cost, kk's price]
-        ### num_node: (int) the number of nodes
-        ### num_product: (int) the kinds of products
-        ### p_w_list: (list) the product weight list
-        self.graph_dict = g_dict
-        self.seed_cost_dict = s_c_dict
-        self.product_list = prod_list
-        self.num_node = len(s_c_dict)
-        self.num_product = len(prod_list)
-        self.pw_list = pw_list
-        self.prob_threshold = 0.001
-
-    def getExpectedProfit(self, k_prod, i_node, s_set, s_i_tree, k_i_tree):
-        # -- calculate the expected profit for single node when i_node's chosen as a seed for k-product --
-        temp_s_i_tree = copy.deepcopy(s_i_tree)
-        temp_k_i_tree = [{} for _ in range(self.num_product)]
-        temp_k_i_tree[k_prod] = k_i_tree
-        diff_d = DiffusionAccProb(self.graph_dict, self.seed_cost_dict, self.product_list)
-
-        if diff_d.whetherNodeInTree(i_node, s_i_tree[k_prod]):
-            temp_s_i_tree = [{} for _ in range(self.num_product)]
-            for k in range(self.num_product):
-                if k == k_prod:
-                    for i in s_i_tree[k_prod]:
-                        temp_s_i_tree[k_prod][i] = diff_d.removeNodeFromTree(i_node, s_i_tree[k_prod][i])
-                else:
-                    temp_s_i_tree[k] = s_i_tree[k]
-
-        for s in s_set[k_prod]:
-            if diff_d.whetherNodeInTree(s, k_i_tree):
-                temp_k_i_tree = [{} for _ in range(self.num_product)]
-                for i in k_i_tree:
-                    temp_k_i_tree[k_prod][i] = k_i_tree[i]
-                    for s_node in s_set[k_prod]:
-                        temp_k_i_tree[k_prod][i] = diff_d.removeNodeFromTree(s_node, temp_k_i_tree[k_prod][i])
-
-        if len(temp_s_i_tree[k_prod]) == 0:
-            temp_s_i_tree[k_prod] = temp_k_i_tree[k_prod]
-        else:
-            temp_s_i_tree[k_prod][i_node] = temp_k_i_tree[k_prod][i_node]
-
-        i_dict, i_tree = diff_d.generateIDictUsingITree(temp_s_i_tree)
-
-        ep = 0.0
-        for k in range(self.num_product):
-            for i in i_dict[k]:
-                acc_prob = 1.0
-                for prob in i_dict[k][i]:
-                    acc_prob *= (1 - float(prob))
-                ep += ((1 - acc_prob) * self.product_list[k][0] * self.pw_list[k])
-
-        return round(ep, 4), i_tree
+        return ei
 
 
 class Evaluation:
