@@ -69,10 +69,10 @@ if __name__ == '__main__':
 
                                         seed_set_length = sum(len(seed_set[kk]) for kk in range(num_product))
                                         if mep_flag == seed_set_length:
-                                            now_profit = round(now_profit + mep_ratio * seed_cost_dict[mep_i_node], 4)
+                                            now_profit = round(now_profit + mep_ratio * (now_budget + seed_cost_dict[mep_i_node]), 4)
                                             now_budget = round(now_budget + seed_cost_dict[mep_i_node], 2)
                                             seed_set[mep_k_prod].add(mep_i_node)
-                                            expected_profit_k[mep_k_prod] = round(expected_profit_k[mep_k_prod] + mep_mg, 4)
+                                            expected_profit_k[mep_k_prod] = round(expected_profit_k[mep_k_prod] + mep_ratio * now_budget, 4)
                                         else:
                                             seed_set_k = copy.deepcopy(seed_set[mep_k_prod])
                                             seed_set_k.add(mep_i_node)
