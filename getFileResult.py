@@ -3,7 +3,11 @@ import os
 data_setting_seq = [1, 2]
 cm_seq = [1, 2]
 # model is optional
-model_seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+model_seq = ['mngic', 'mpmisic',
+             'mngric', 'mngpwic', 'mngrpwic', 'mngsric', 'mngsrpwic',
+             'mngapic', 'mngapric', 'mngappwic', 'mngaprpwic', 'mngapsric', 'mngapsrpwic',
+             'mhdic', 'mhedic', 'mhdpwic', 'mhedpwic',
+             'mric']
 pps_seq = [1, 2, 3]
 wpiwp_seq = [bool(0), bool(1)]
 prod_setting_seq, prod_setting2_seq = [1, 2], [1, 2, 3]
@@ -15,10 +19,7 @@ for data_setting in data_setting_seq:
     for cm in cm_seq:
         cas_model = 'ic' * (cm == 1) + 'wc' * (cm == 2)
         for m in model_seq:
-            model_name = 'mngic' * (m == 1) + 'mhdic' * (m == 2) + 'mric' * (m == 3) + 'mpmisic' * (m == 4) + \
-                         'mngric' * (m == 5) + 'mngpwic' * (m == 6) + 'mngrpwic' * (m == 7) + \
-                         'mhedic' * (m == 8) + 'mhdpwic' * (m == 9) + 'mhedpwic' * (m == 10) + \
-                         'mngapic' * (m == 11) + 'mngapric' * (m == 12) + 'mngappwic' * (m == 13) + 'mngaprpwic' * (m == 14) + '_pps'
+            model_name = m + '_pps'
             for pps in pps_seq:
                 for wpiwp in wpiwp_seq:
                     for prod_setting in prod_setting_seq:
@@ -39,7 +40,7 @@ for data_setting in data_setting_seq:
                                 for bud in range(1, total_budget + 1):
                                     try:
                                         result_name = ''
-                                        if m > 10:
+                                        if 'ap' in model_name:
                                             result_name = 'result/' + model_name + str(pps) + '_dis' + str(dis) + '_wpiwp' * wpiwp + '/' + \
                                                           data_set_name + '_' + cas_model + '_' + product_name + '/' + 'b' + str(bud) + '_i1.txt'
                                         else:
